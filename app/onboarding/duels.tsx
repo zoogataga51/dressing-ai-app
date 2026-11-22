@@ -9,6 +9,7 @@ import { Button, Screen, Sticker } from '@/components/ui';
 import { duelsFor, stylesFromDuels, type DuelLook } from '@/data/duels';
 import { STYLE_OPTIONS_BY_ID } from '@/data/questionnaire';
 import { mix } from '@/lib/color';
+import { scheduleMorningNotification } from '@/lib/notifications';
 import { useStore, type DuelChoice } from '@/state/AppStore';
 import { useTheme } from '@/theme/ThemeProvider';
 import { fonts, motion } from '@/theme/tokens';
@@ -59,6 +60,7 @@ export default function DuelsScreen() {
     setDuels(choices);
     setAnswers({ ...profile.answers, styles });
     completeOnboarding();
+    scheduleMorningNotification(profile.notificationTime, profile.firstName).catch(() => {});
     router.replace('/ajout?onboarding=1');
   };
 

@@ -1,13 +1,18 @@
 import { useRouter } from 'expo-router';
-import { Alert, ScrollView, View } from 'react-native';
+import { useState } from 'react';
+import { Alert, ScrollView, TextInput, View } from 'react-native';
 import Animated, { FadeInDown, useAnimatedStyle, withSpring, withTiming } from 'react-native-reanimated';
 import { AppText } from '@/components/AppText';
 import { PressableScale } from '@/components/PressableScale';
-import { Card, Row, Screen } from '@/components/ui';
+import { Sheet } from '@/components/Sheet';
+import { Button, Card, Chip, Row, Screen } from '@/components/ui';
+import { scheduleMorningNotification } from '@/lib/notifications';
 import { STYLE_OPTIONS_BY_ID } from '@/data/questionnaire';
 import { useStore } from '@/state/AppStore';
 import { useTheme } from '@/theme/ThemeProvider';
-import { motion, space } from '@/theme/tokens';
+import { fonts, motion, space } from '@/theme/tokens';
+
+const TIMES = ['06:30', '07:00', '07:30', '08:00', '08:30', '09:00'];
 
 function Toggle({ on }: { on: boolean }) {
   const { colors } = useTheme();
@@ -32,7 +37,9 @@ function Section({ title, children, delay }: { title: string; children: React.Re
 export default function ProfileScreen() {
   const { colors, isDark, setMode } = useTheme();
   const router = useRouter();
-  const { profile, resetAll } = useStore();
+  const { profile, resetAll, updateProfile } = useStore();
+  const [sheet, setSheet] = useState<'city' | 'time' | null>(null);
+  const [cityDraft, setCityDraft] = useState(profile.city);
 
   const styles = (profile.answers['styles'] ?? []).map((id) => STYLE_OPTIONS_BY_ID[id]?.label).filter(Boolean) as string[];
   const trialDaysLeft = profile.trialStartedAt
@@ -77,8 +84,8 @@ export default function ProfileScreen() {
         </Animated.View>
 
         <Section title="Chaque matin" delay={120}>
-          <Row label="Ville pour la météo" value={profile.city} onPress={() => {}} />
-          <Row label="Notification du look" value={profile.notificationTime.replace(':', ' h ')} onPress={() => {}} />
+          <Row label="Ville pour la météo" value={profile.city} onPress={() => { setCityDraft(profile.city); setSheet('city'); }} />
+          <Row label="Notification du look" value={profile.notificationTime.replace(':', ' h ')} onPress={() => setSheet('time')} />
           <Row label="Mode sombre" last right={<Toggle on={isDark} />} onPress={() => setMode(isDark ? 'light' : 'dark')} />
         </Section>
 
@@ -99,6 +106,27 @@ export default function ProfileScreen() {
 
         <AppText variant="tiny" muted style={{ textAlign: 'center', marginTop: space.sm }}>Dressing AI · version 0.1 (bêta)</AppText>
       </ScrollView>
+
+      <Sheet visible={sheet === 'city'} title="Ta ville" onClose={() => setSheet(null)}>
+        <TextInput autoFocus value={cityDraft} onChangeText={setCityDraft} placeholder="Ex. : Lyon" placeholderTextColor={colors.textSubtle}
+          style={{ height: 56, borderRadius: 18, borderWidth: 2, borderColor: colors.primary, backgroundColor: colors.surface, paddingHorizontal: 16,
+            fontFamily: fonts.displayBold, fontSize: 18, color: colors.text }} />
+        <Button label="Enregistrer" disabled={!cityDraft.trim()} onPress={() => { updateProfile({ city: cityDraft.trim() }); setSheet(null); }} />
+      </Sheet>
+
+      <Sheet visible={sheet === 'time'} title="Heure de ton look" onClose={() => setSheet(null)}>
+        <AppText muted>Tu recevras tes looks du jour chaque matin à cette heure.</AppText>
+        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+          {TIMES.map((t) => (
+            <Chip key={t} label={t.replace(':', ' h ')} selected={profile.notificationTime === t} onPress={async () => {
+              updateProfile({ notificationTime: t });
+              const ok = await scheduleMorningNotification(t, profile.firstName);
+              if (!ok) Alert.alert('Notifications désactivées', 'Active-les dans les réglages du téléphone pour recevoir ton look du matin.');
+              setSheet(null);
+            }} />
+          ))}
+        </View>
+      </Sheet>
     </Screen>
   );
 }

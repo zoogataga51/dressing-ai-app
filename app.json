@@ -38,10 +38,11 @@
       [
         "expo-image-picker",
         {
-          "photosPermission": "Dressing AI a besoin de tes photos pour ajouter tes vêtements.",
-          "cameraPermission": "Dressing AI a besoin de l’appareil photo pour photographier tes vêtements."
+          "photosPermission": "Dressing AI a besoin de tes photos pour ajouter tes v\u00eatements.",
+          "cameraPermission": "Dressing AI a besoin de l\u2019appareil photo pour photographier tes v\u00eatements."
         }
-      ]
+      ],
+      "expo-notifications"
     ],
     "scheme": "dressingai",
     "experiments": {
