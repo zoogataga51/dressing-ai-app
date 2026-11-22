@@ -10,3 +10,14 @@
 - Installer les paquets natifs avec `EXPO_OFFLINE=1 npx expo install <paquet>` (versions compatibles Expo).
 - Aucune clé secrète dans l'appli : les appels à l'IA passent par `supabase/functions`.
 - Lire `docs/ARCHITECTURE.md` avant une modification importante.
+
+## Journal partagé (obligatoire)
+
+Plusieurs sessions de Claude travaillent sur ce projet (une dans le cloud, une sur le PC du fondateur)
+et elles ne voient pas les conversations des autres. Le lien entre elles, c'est `docs/JOURNAL.md`.
+
+- Au début de chaque session : lire les dernières entrées de `docs/JOURNAL.md`.
+- Après chaque étape importante (installation, commande qui échoue, test sur téléphone, compte créé,
+  décision, retour du fondateur) : ajouter une entrée datée en bas du fichier, en 1 à 5 lignes.
+- Ne jamais y écrire de clé, mot de passe ou donnée secrète.
+- Si Git le permet, faire un commit + push du journal après chaque entrée.
