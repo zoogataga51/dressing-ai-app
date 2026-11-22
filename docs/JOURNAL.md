@@ -23,3 +23,10 @@ Git n'a pas d'identité (user.name/email) sur ce PC : journal pas encore commit�
 ## 2026-11-22 22:28 — [PC] Git configuré
 Identité Git réglée sur ce PC (nom zoogataga51, e-mail masqué GitHub noreply). Le journal peut maintenant être commité depuis le PC.
 À noter : Expo a retiré `.expo/types/**/*.ts` et `expo-env.d.ts` de tsconfig.json#include au démarrage ; changement laissé non commité, à vérifier.
+
+## 2026-11-22 22:32 — [PC] Échec du mode tunnel
+`npx expo start --tunnel` échoue : « Couldn't create a signed tunnel URL… You're not logged in to your Expo account ». Expo propose `npx expo login` ou `--tunnel ngrok`. Choix du fondateur en attente.
+
+## 2026-11-22 22:38 — [PC] Mode tunnel OK
+Fondateur connecté à son compte Expo (`npx expo login`, via le navigateur). `npx expo start --tunnel` marche : QR code en exps://…on.expo.app,
+utilisable même si le téléphone n'est pas sur le même Wi-Fi que le PC. Test sur téléphone : en attente.
