@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { ScrollView, useWindowDimensions, View } from 'react-native';
 import Animated, {
   FadeInDown, FadeOut, interpolate, useAnimatedScrollHandler, useAnimatedStyle, useSharedValue, ZoomIn,
@@ -11,10 +11,11 @@ import { Button, Chip, IconButton, Screen, Sticker } from '@/components/ui';
 import { MOCK_WEATHER } from '@/data/mock';
 import { outfitTint } from '@/lib/color';
 import { generateOutfits } from '@/lib/outfitEngine';
+import { getTodayWeather } from '@/lib/weather';
 import { useStore } from '@/state/AppStore';
 import { useTheme } from '@/theme/ThemeProvider';
 import { motion, space } from '@/theme/tokens';
-import { MOODS, type Garment, type Mood, type Outfit } from '@/types';
+import { MOODS, type Garment, type Mood, type Outfit, type Weather } from '@/types';
 
 const SIDE = 20;
 const GAP = 12;
@@ -72,14 +73,19 @@ export default function TodayScreen() {
   const { wardrobe, profile, wearOutfit, history } = useStore();
   const { width: screenW } = useWindowDimensions();
   const cardW = screenW - SIDE * 2;
-  const weather = MOCK_WEATHER;
+  const [weather, setWeather] = useState<Weather>({ ...MOCK_WEATHER, city: profile.city || MOCK_WEATHER.city });
+  useEffect(() => {
+    let alive = true;
+    getTodayWeather(profile.city || 'Paris').then((w) => { if (alive && w) setWeather(w); });
+    return () => { alive = false; };
+  }, [profile.city]);
 
   const [mood, setMood] = useState<Mood>('free');
   const [active, setActive] = useState(0);
   const today = new Date().toISOString().slice(0, 10);
   const wornToday = history.find((h) => h.date === today);
 
-  const outfits = useMemo(() => generateOutfits(wardrobe, weather, mood, 3), [mood, wardrobe.length]); // eslint-disable-line react-hooks/exhaustive-deps
+  const outfits = useMemo(() => generateOutfits(wardrobe, weather, mood, 3), [mood, wardrobe.length, weather.tempC, weather.condition]); // eslint-disable-line react-hooks/exhaustive-deps
   const byId = useMemo(() => new Map(wardrobe.map((g) => [g.id, g])), [wardrobe]);
   const scrollX = useSharedValue(0);
   const listRef = useRef<Animated.FlatList<Outfit> | null>(null);
