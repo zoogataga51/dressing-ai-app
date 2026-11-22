@@ -6,6 +6,7 @@ import { AppText } from '@/components/AppText';
 import { Icon } from '@/components/Icon';
 import { PressableScale } from '@/components/PressableScale';
 import { Button, IconButton, Screen } from '@/components/ui';
+import { track } from '@/lib/analytics';
 import { QUESTIONS, type Option, type Question } from '@/data/questionnaire';
 import { useStore } from '@/state/AppStore';
 import { useTheme } from '@/theme/ThemeProvider';
@@ -61,6 +62,7 @@ export default function QuestionnaireScreen() {
   };
 
   const goNext = (latest = answers) => {
+    track('onboarding_question', { step: step + 1, id: q.id });
     if (isLast) {
       setAnswers(latest);
       updateProfile({ firstName: (text.firstName ?? '').trim(), city: (text.city ?? '').trim() || 'Paris' });

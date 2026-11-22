@@ -30,6 +30,8 @@ function RootStack() {
         <Stack.Screen name="(tabs)" options={{ animation: 'fade' }} />
         <Stack.Screen name="onboarding" />
         <Stack.Screen name="ajout" options={{ animation: 'slide_from_bottom' }} />
+        <Stack.Screen name="vetement/[id]" />
+        <Stack.Screen name="look/[date]" />
         <Stack.Screen name="abonnement" options={{ presentation: 'modal', animation: 'slide_from_bottom' }} />
       </Stack>
     </>

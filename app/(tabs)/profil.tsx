@@ -7,6 +7,7 @@ import { PressableScale } from '@/components/PressableScale';
 import { Sheet } from '@/components/Sheet';
 import { Button, Card, Chip, Row, Screen } from '@/components/ui';
 import { scheduleMorningNotification } from '@/lib/notifications';
+import { track } from '@/lib/analytics';
 import { STYLE_OPTIONS_BY_ID } from '@/data/questionnaire';
 import { useStore } from '@/state/AppStore';
 import { useTheme } from '@/theme/ThemeProvider';
@@ -120,6 +121,7 @@ export default function ProfileScreen() {
           {TIMES.map((t) => (
             <Chip key={t} label={t.replace(':', ' h ')} selected={profile.notificationTime === t} onPress={async () => {
               updateProfile({ notificationTime: t });
+              track('notification_time_set', { time: t });
               const ok = await scheduleMorningNotification(t, profile.firstName);
               if (!ok) Alert.alert('Notifications désactivées', 'Active-les dans les réglages du téléphone pour recevoir ton look du matin.');
               setSheet(null);

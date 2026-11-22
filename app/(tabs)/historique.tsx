@@ -1,3 +1,4 @@
+import { useRouter } from 'expo-router';
 import { ScrollView, View } from 'react-native';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 import { AppText } from '@/components/AppText';
@@ -10,6 +11,7 @@ import { MOODS } from '@/types';
 
 export default function HistoryScreen() {
   const { colors } = useTheme();
+  const router = useRouter();
   const { history, wardrobe } = useStore();
   const byId = new Map(wardrobe.map((g) => [g.id, g]));
 
@@ -46,7 +48,7 @@ export default function HistoryScreen() {
             const mood = MOODS.find((m) => m.id === h.mood)?.label.toLowerCase();
             return (
               <Animated.View key={h.date} entering={FadeInDown.delay(120 + k * motion.stagger).duration(motion.slow)}>
-                <PressableScale pressedScale={0.98} accessibilityRole="button"
+                <PressableScale pressedScale={0.98} accessibilityRole="button" onPress={() => router.push(`/look/${h.date}`)}
                   style={{ flexDirection: 'row', alignItems: 'center', gap: 12, padding: 12, borderRadius: 20, borderWidth: 1, borderColor: colors.surfaceBorder, backgroundColor: colors.surface }}>
                   <View style={{ width: 44, alignItems: 'center' }}>
                     <AppText style={{ fontFamily: 'Syne_800ExtraBold', fontSize: 24, lineHeight: 26 }}>{d.getDate()}</AppText>

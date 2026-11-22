@@ -8,7 +8,8 @@ import { PressableScale } from '@/components/PressableScale';
 import { Button, Screen, Sticker } from '@/components/ui';
 import { duelsFor, stylesFromDuels, type DuelLook } from '@/data/duels';
 import { STYLE_OPTIONS_BY_ID } from '@/data/questionnaire';
-import { mix } from '@/lib/color';
+import { mix, readableOn } from '@/lib/color';
+import { track } from '@/lib/analytics';
 import { scheduleMorningNotification } from '@/lib/notifications';
 import { useStore, type DuelChoice } from '@/state/AppStore';
 import { useTheme } from '@/theme/ThemeProvider';
@@ -35,7 +36,7 @@ function LookCard({ look, onPress, side }: { look: DuelLook; onPress: () => void
             ))}
           </View>
         )}
-        <AppText style={{ fontFamily: fonts.displayBold, fontSize: 16 }} color="#15151C" numberOfLines={1}>{look.title}</AppText>
+        <AppText style={{ fontFamily: fonts.displayBold, fontSize: 16 }} color={readableOn(tint)} numberOfLines={1}>{look.title}</AppText>
       </PressableScale>
     </Animated.View>
   );
@@ -53,6 +54,7 @@ export default function DuelsScreen() {
 
   const pick = (picked: DuelChoice['picked']) => {
     setChoices((c) => [...c, { duelId: duels[i].id, picked }]);
+    track('onboarding_duel', { index: i + 1, picked });
     setI((x) => x + 1);
   };
 
@@ -60,6 +62,7 @@ export default function DuelsScreen() {
     setDuels(choices);
     setAnswers({ ...profile.answers, styles });
     completeOnboarding();
+    track('onboarding_done', { styles });
     scheduleMorningNotification(profile.notificationTime, profile.firstName).catch(() => {});
     router.replace('/ajout?onboarding=1');
   };

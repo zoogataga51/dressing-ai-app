@@ -9,7 +9,8 @@ import { GarmentTile } from '@/components/GarmentTile';
 import { Icon } from '@/components/Icon';
 import { Button, Chip, IconButton, Screen, Sticker } from '@/components/ui';
 import { MOCK_WEATHER } from '@/data/mock';
-import { outfitTint } from '@/lib/color';
+import { outfitTint, readableMutedOn, readableOn } from '@/lib/color';
+import { track } from '@/lib/analytics';
 import { generateOutfits } from '@/lib/outfitEngine';
 import { getTodayWeather } from '@/lib/weather';
 import { useStore } from '@/state/AppStore';
@@ -50,8 +51,8 @@ function OutfitCard({ outfit, pieces, index, total, width, scrollX, moodLabel }:
         <AppText variant="eyebrow" color={colors.primary} style={{ fontFamily: 'Syne_700Bold', letterSpacing: 1.7 }}>
           Look 0{index + 1} / 0{total}
         </AppText>
-        <AppText variant="title" color="#15151C">{outfit.name}</AppText>
-        <AppText variant="small" color="#4F4B44">{outfit.vibe}</AppText>
+        <AppText variant="title" color={readableOn(tint)}>{outfit.name}</AppText>
+        <AppText variant="small" color={readableMutedOn(tint)}>{outfit.vibe}</AppText>
       </View>
       <Animated.View entering={ZoomIn.delay(200).springify()} style={{ position: 'absolute', top: 16, right: 14 }}>
         <Sticker label={moodLabel} rotate={4} />
@@ -152,7 +153,7 @@ export default function TodayScreen() {
 
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: SIDE, gap: 8 }}>
           {MOODS.map((m) => (
-            <Chip key={m.id} label={m.label} selected={m.id === mood} onPress={() => { setMood(m.id); setActive(0); listRef.current?.scrollToOffset({ offset: 0, animated: false }); }} />
+            <Chip key={m.id} label={m.label} selected={m.id === mood} onPress={() => { setMood(m.id); track('mood_changed', { mood: m.id }); setActive(0); listRef.current?.scrollToOffset({ offset: 0, animated: false }); }} />
           ))}
         </ScrollView>
 
@@ -166,7 +167,7 @@ export default function TodayScreen() {
               <AppText variant="bodyStrong" color={colors.onInverse}>C’est noté : {wornToday.outfit.name}. Belle journée !</AppText>
             </Animated.View>
           ) : (
-            <Button label="Je porte ce look" disabled={!outfits[active]} onPress={() => outfits[active] && wearOutfit(outfits[active], mood, weather.tempC)} />
+            <Button label="Je porte ce look" disabled={!outfits[active]} onPress={() => { if (!outfits[active]) return; wearOutfit(outfits[active], mood, weather.tempC); track('outfit_worn', { position: active + 1, mood }); }} />
           )}
         </View>
 

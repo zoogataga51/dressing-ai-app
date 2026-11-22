@@ -1,5 +1,5 @@
 import { useRouter } from 'expo-router';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Alert, ScrollView, View } from 'react-native';
 import Animated, { FadeInDown, ZoomIn, useAnimatedStyle, withSpring, withTiming } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -7,6 +7,7 @@ import { AppText } from '@/components/AppText';
 import { Icon } from '@/components/Icon';
 import { PressableScale } from '@/components/PressableScale';
 import { Button } from '@/components/ui';
+import { track } from '@/lib/analytics';
 import { useTheme } from '@/theme/ThemeProvider';
 import { fonts, motion } from '@/theme/tokens';
 
@@ -53,6 +54,7 @@ export default function PaywallScreen() {
   const router = useRouter();
   const [plan, setPlan] = useState<'year' | 'month'>('year');
   const current = PLANS.find((p) => p.id === plan)!;
+  useEffect(() => { track('paywall_view'); }, []);
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.background }}>

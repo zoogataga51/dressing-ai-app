@@ -43,3 +43,13 @@ export function outfitTint(hexes: string[], paper: string, strength = 0.28): str
   const best = [...hexes].sort((a, b) => saturation(b) - saturation(a))[0] ?? paper;
   return mix(paper, best, strength);
 }
+
+/** Couleur de texte lisible (encre ou papier) sur un fond donné. */
+export function readableOn(bg: string): string {
+  return luminance(bg) > 0.3 ? '#15151C' : '#F3F0EA';
+}
+
+/** Texte secondaire lisible sur un fond donné. */
+export function readableMutedOn(bg: string): string {
+  return luminance(bg) > 0.3 ? '#4F4B44' : '#C9C3B6';
+}

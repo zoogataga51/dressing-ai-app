@@ -7,32 +7,17 @@ import Animated, {
   FadeInDown, ZoomIn, useAnimatedStyle, useSharedValue, withRepeat, withSequence, withTiming,
 } from 'react-native-reanimated';
 import { AppText } from '@/components/AppText';
+import { ChipRow } from '@/components/ChipRow';
 import { Icon } from '@/components/Icon';
 import { Button, Chip, IconButton, ProgressBar, Screen, Sticker } from '@/components/ui';
 import { analyzeGarment, AI_ENABLED, type GarmentGuess } from '@/lib/ai';
+import { track } from '@/lib/analytics';
 import { useStore } from '@/state/AppStore';
 import { useTheme } from '@/theme/ThemeProvider';
 import { fonts, motion } from '@/theme/tokens';
-import type { Category, Fit, Season } from '@/types';
+import { CATEGORY_OPTIONS as CATEGORIES, COLOR_OPTIONS as COLORS, FIT_OPTIONS as FITS, SEASON_OPTIONS as SEASONS } from '@/data/garmentOptions';
 
 const TARGET = 10; // nombre de pièces avant le premier look
-
-const CATEGORIES: { id: Category; label: string }[] = [
-  { id: 'top', label: 'Haut' }, { id: 'bottom', label: 'Bas' }, { id: 'dress', label: 'Robe' },
-  { id: 'outer', label: 'Veste' }, { id: 'shoes', label: 'Chaussures' }, { id: 'accessory', label: 'Accessoire' },
-];
-const COLORS: { name: string; hex: string }[] = [
-  { name: 'Noir', hex: '#1B1B1F' }, { name: 'Blanc', hex: '#F1EFEA' }, { name: 'Beige', hex: '#E3D5BE' }, { name: 'Camel', hex: '#B48A5E' },
-  { name: 'Gris', hex: '#9C9A95' }, { name: 'Marine', hex: '#24314F' }, { name: 'Bleu', hex: '#3E68C9' }, { name: 'Bleu jean', hex: '#4A6285' },
-  { name: 'Kaki', hex: '#7F846C' }, { name: 'Vert', hex: '#3F6B4F' }, { name: 'Marron', hex: '#6B4A33' }, { name: 'Bordeaux', hex: '#7A2632' },
-  { name: 'Rouge', hex: '#C2353A' }, { name: 'Rose', hex: '#E5A3B8' }, { name: 'Jaune', hex: '#E2B73F' }, { name: 'Violet', hex: '#6E3B55' },
-];
-const FITS: { id: Fit; label: string }[] = [
-  { id: 'slim', label: 'Ajusté' }, { id: 'regular', label: 'Droit' }, { id: 'loose', label: 'Ample' }, { id: 'oversize', label: 'Oversize' },
-];
-const SEASONS: { id: Season; label: string }[] = [
-  { id: 'spring', label: 'Printemps' }, { id: 'summer', label: 'Été' }, { id: 'autumn', label: 'Automne' }, { id: 'winter', label: 'Hiver' },
-];
 
 function ScanLine() {
   const { colors } = useTheme();
@@ -44,17 +29,6 @@ function ScanLine() {
   return (
     <Animated.View pointerEvents="none" style={[{ position: 'absolute', left: 0, right: 0, top: '50%', height: 3, backgroundColor: colors.primary,
       shadowColor: colors.primary, shadowOpacity: 0.6, shadowRadius: 12 }, style]} />
-  );
-}
-
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
-  return (
-    <View style={{ gap: 8 }}>
-      <AppText variant="eyebrow">{label}</AppText>
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginHorizontal: -20 }} contentContainerStyle={{ gap: 8, paddingHorizontal: 20 }}>
-        {children}
-      </ScrollView>
-    </View>
   );
 }
 
@@ -94,6 +68,7 @@ export default function AddGarmentScreen() {
     const label = `${guess.subtype} ${guess.colorName.toLowerCase()}`;
     addGarment({ id: `g-${Date.now()}`, ...guess, label, imageUrl: guess.cutoutUrl ?? photo, wearCount: 0 });
     setAdded((n) => n + 1);
+    track('garment_added', { category: guess.category, onboarding: inOnboarding });
     setPhoto(null);
     setGuess(null);
   };
@@ -150,23 +125,23 @@ export default function AddGarmentScreen() {
         {guess ? (
           <Animated.View entering={FadeInDown.duration(motion.slow)} style={{ gap: 16 }}>
             <AppText variant="eyebrow">Touche pour corriger</AppText>
-            <Field label="Type">
+            <ChipRow label="Type">
               {CATEGORIES.map((c) => <Chip key={c.id} label={c.label} selected={guess.category === c.id} onPress={() => set({ category: c.id })} />)}
-            </Field>
-            <Field label="Couleur">
+            </ChipRow>
+            <ChipRow label="Couleur">
               {COLORS.map((c) => (
                 <Chip key={c.name} label={c.name} selected={guess.colorName === c.name} onPress={() => set({ colorName: c.name, colorHex: c.hex })} />
               ))}
-            </Field>
-            <Field label="Coupe">
+            </ChipRow>
+            <ChipRow label="Coupe">
               {FITS.map((f) => <Chip key={f.id} label={f.label} selected={guess.fit === f.id} onPress={() => set({ fit: f.id })} />)}
-            </Field>
-            <Field label="Saisons">
+            </ChipRow>
+            <ChipRow label="Saisons">
               {SEASONS.map((s) => (
                 <Chip key={s.id} label={s.label} selected={guess.seasons.includes(s.id)}
                   onPress={() => set({ seasons: guess.seasons.includes(s.id) ? guess.seasons.filter((x) => x !== s.id) : [...guess.seasons, s.id] })} />
               ))}
-            </Field>
+            </ChipRow>
             <Button label={inOnboarding ? 'Valider et ajouter la suivante' : 'Ajouter à ma garde-robe'} onPress={save} />
           </Animated.View>
         ) : null}
