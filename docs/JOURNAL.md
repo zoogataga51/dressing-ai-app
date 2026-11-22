@@ -11,3 +11,15 @@ IA, détourage et paiement encore simulés. Rien n'a encore été testé sur un 
 ## 2026-11-22 21:35 — [cloud] Prochaine étape
 Le fondateur installe Git sur son PC (Windows), puis la session PC clone le dépôt dans Documents\dressing-ai-app,
 fait `npm install` et `npx expo start` pour le premier test dans Expo Go. Noter ici les erreurs rencontrées.
+
+## 2026-11-22 21:39 — [PC] Installation sur le PC du fondateur
+Git 2.56.1 installé (winget), Node v24.15.0, npm 11.12.1. Dépôt cloné dans Documents\dressing-ai-app.
+`npm install` OK : 531 paquets en 3 min, aucune erreur.
+
+## 2026-11-22 21:41 — [PC] Expo démarré
+`npx expo start` OK : Metro tourne, QR code affiché (exp://10.188.149.49:8081, mode Expo Go). Expo a mis à jour tsconfig.json#include.
+Git n'a pas d'identité (user.name/email) sur ce PC : journal pas encore commité. Test sur téléphone : en attente.
+
+## 2026-11-22 22:28 — [PC] Git configuré
+Identité Git réglée sur ce PC (nom zoogataga51, e-mail masqué GitHub noreply). Le journal peut maintenant être commité depuis le PC.
+À noter : Expo a retiré `.expo/types/**/*.ts` et `expo-env.d.ts` de tsconfig.json#include au démarrage ; changement laissé non commité, à vérifier.
