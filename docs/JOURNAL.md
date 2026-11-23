@@ -146,3 +146,9 @@ Question du fondateur. Avant : l'IA signalait « pas de vêtement » mais l'ajou
 « On ne voit pas de vêtement » avec Reprendre / Galerie, et « C'est bien un vêtement » pour forcer (événement
 garment_ai_override). Mode démo signalé clairement (l'IA ne regarde pas la photo). Testé : logo → is_garment false.
 Mise à jour 0.1.2 publiée.
+
+## 2026-11-23 — [cloud] SMTP branché : codes à 6 chiffres en français
+Le fondateur a configuré le SMTP Resend dans Supabase (noreply@dressingai.fr). Modèles d'e-mail français (connexion,
+inscription, ajout d'e-mail) avec le code en grand + lien de secours : supabase/email/templates.json, appliqués via
+l'API. site_url = https://dressingai.fr (avant : localhost, d'où la page vide au clic sur le lien). Test réel : code
+envoyé par Resend. Compte de test supprimé.
