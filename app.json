@@ -2,23 +2,39 @@
   "expo": {
     "name": "Dressing AI",
     "slug": "dressing-ai",
-    "version": "1.0.0",
+    "version": "0.1.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "automatic",
     "ios": {
       "supportsTablet": false,
-      "bundleIdentifier": "com.dressingai.app"
+      "bundleIdentifier": "com.dressingai.app",
+      "buildNumber": "1",
+      "config": {
+        "usesNonExemptEncryption": false
+      },
+      "infoPlist": {
+        "CFBundleDevelopmentRegion": "fr",
+        "CFBundleAllowMixedLocalizations": true
+      }
     },
     "android": {
       "adaptiveIcon": {
-        "backgroundColor": "#F6F3EE",
+        "backgroundColor": "#2B44C6",
         "foregroundImage": "./assets/android-icon-foreground.png",
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
       },
       "predictiveBackGestureEnabled": false,
-      "package": "com.dressingai.app"
+      "package": "com.dressingai.app",
+      "versionCode": 1,
+      "permissions": [
+        "android.permission.CAMERA",
+        "android.permission.POST_NOTIFICATIONS"
+      ],
+      "blockedPermissions": [
+        "android.permission.RECORD_AUDIO"
+      ]
     },
     "web": {
       "favicon": "./assets/favicon.png"
@@ -38,8 +54,8 @@
       [
         "expo-image-picker",
         {
-          "photosPermission": "Dressing AI a besoin de tes photos pour ajouter tes v\u00eatements.",
-          "cameraPermission": "Dressing AI a besoin de l\u2019appareil photo pour photographier tes v\u00eatements."
+          "photosPermission": "Dressing AI a besoin de tes photos pour ajouter tes vêtements.",
+          "cameraPermission": "Dressing AI a besoin de l’appareil photo pour photographier tes vêtements."
         }
       ],
       "expo-notifications"
@@ -47,6 +63,14 @@
     "scheme": "dressingai",
     "experiments": {
       "typedRoutes": false
+    },
+    "owner": "moha.del51",
+    "description": "Chaque matin, des looks composés avec tes propres vêtements, selon la météo et ton humeur.",
+    "locales": {
+      "fr": "./locales/fr.json"
+    },
+    "runtimeVersion": {
+      "policy": "appVersion"
     }
   }
 }

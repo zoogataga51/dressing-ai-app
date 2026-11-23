@@ -1,0 +1,7 @@
+{
+  "ios": {
+    "CFBundleDisplayName": "Dressing AI",
+    "NSCameraUsageDescription": "Dressing AI a besoin de l’appareil photo pour photographier tes vêtements.",
+    "NSPhotoLibraryUsageDescription": "Dressing AI a besoin de tes photos pour ajouter tes vêtements."
+  }
+}

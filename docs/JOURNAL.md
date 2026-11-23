@@ -82,3 +82,11 @@ terminé ». RevenueCat installé (inactif tant qu'il n'y a pas de clés ; mode 
 des stores, restauration, codes promo. Fonction revenuecat-webhook déployée (inactive sans secret). CGU et
 politique de confidentialité (RGPD, données sensibles « voile » avec consentement explicite) dans l'appli et
 docs/legal/. Export des données (portabilité) dans le Profil. Champs [entre crochets] à compléter par le fondateur.
+
+## 2026-11-23 — [cloud] Préparation bêta (étape 9)
+Vraie icône (D Syne + sticker « AI » corail, script scripts/brand/make-icons.py), écran de démarrage, icônes
+Android. app.json : version 0.1.0, owner moha.del51, français, chiffrement non soumis. eas.json (development /
+preview / production). docs/BETA.md : ordre des déblocages, fiches stores, confidentialité App Store / Google,
+recrutement des testeurs. supabase/sql/indicateurs.sql (entonnoir, matins actifs, rétention, coût IA, conversion)
+testé. Tentative d'activer les comptes anonymes Supabase (inscription sans e-mail) refusée par le garde-fou de
+la session : à décider par le fondateur.
