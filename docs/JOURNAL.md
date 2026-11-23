@@ -152,3 +152,9 @@ Le fondateur a configuré le SMTP Resend dans Supabase (noreply@dressingai.fr). 
 inscription, ajout d'e-mail) avec le code en grand + lien de secours : supabase/email/templates.json, appliqués via
 l'API. site_url = https://dressingai.fr (avant : localhost, d'où la page vide au clic sur le lien). Test réel : code
 envoyé par Resend. Compte de test supprimé.
+
+## 2026-11-23 — [cloud] Gemini en niveau payant
+Le fondateur a activé la facturation Google Cloud : prépaiement de 5 € (crédits API Gemini, sans recharge
+automatique, valables 1 an, non remboursables). Le crédit de bienvenue de 300 $ exclut l'API Gemini. Vérifié :
+la clé est en niveau payant (Flash et modèle d'image accessibles). Si les crédits tombent à 0, l'appli bascule sur
+le moteur de secours : surveiller la conso (events ai_call). Prochaines étapes : images des duels, retest Flash.
