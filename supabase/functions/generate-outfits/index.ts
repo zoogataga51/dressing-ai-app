@@ -1,81 +1,105 @@
-// Fonction serveur (Supabase Edge Function, Deno) : compose les 3 looks du jour avec l'IA.
+// Fonction serveur : compose les 3 looks du jour avec l'IA (Gemini), à partir de la garde-robe,
+// du profil de style, de la météo et de l'humeur.
 //
-// Pourquoi côté serveur : la clé de l'API d'IA reste secrète, on contrôle le coût,
-// et on garde une trace de chaque look proposé (table `outfits`).
+// - Les règles du styliste et le contrôle qualité sont dans ../_shared/outfits.ts (testés sur de
+//   fausses garde-robes avec scripts/looks-lab).
+// - Chaque tenue renvoyée par l'IA est vérifiée : aucune pièce inventée, tenue complète, météo.
+// - Même humeur le même jour → on renvoie les looks déjà créés (aucun coût en plus).
+// - Plafond d'appels par jour et par personne pour tenir le coût (< 0,50 € par mois).
+// - Si l'IA échoue, l'appli utilise son moteur par règles (réponse { outfits: [], fallback: true }).
 //
-// Variables à définir dans Supabase (Edge Functions > Secrets) :
-//   AI_API_KEY      clé du fournisseur d'IA retenu après les tests de qualité et de coût
-//   AI_MODEL        nom du modèle
-// SUPABASE_URL et SUPABASE_SERVICE_ROLE_KEY sont fournies automatiquement.
-//
-// État : prête à brancher. Le choix du fournisseur se fera pendant la bêta (tests qualité/coût).
+// Secret nécessaire : GEMINI_API_KEY. SUPABASE_URL et SUPABASE_SERVICE_ROLE_KEY sont automatiques.
 
-import { createClient } from 'jsr:@supabase/supabase-js@2';
+import { geminiJsonWithFallback } from '../_shared/gemini.ts';
+import {
+  buildOutfitPrompt, OUTFIT_SCHEMA, OUTFIT_SYSTEM, validateOutfits,
+  type Mood, type ProposedOutfit, type WardrobeItem, type Weather,
+} from '../_shared/outfits.ts';
+import { adminClient, caller, callsToday, cors, json, logAiCall } from '../_shared/server.ts';
 
-type Garment = {
-  id: string; category: string; subtype: string; label: string; color_name: string; color_hex: string;
-  fit: string; material: string | null; seasons: string[]; warmth: number; formality: number; pattern: string | null;
-};
-
-const SYSTEM_PROMPT = `Tu es un styliste personnel exigeant. Tu composes des tenues UNIQUEMENT avec les vêtements fournis.
-Règles impératives :
-- Tenue complète : un haut + un bas, OU une robe ; toujours des chaussures ; une veste ou un manteau si la température est sous 16 °C ou s'il pleut ; un accessoire seulement s'il apporte quelque chose.
-- Respecte strictement les préférences de couverture de la personne (jamais d'exception).
-- Couleurs : au maximum une couleur forte par tenue, le reste en neutres ou en camaïeu ; évite les couleurs que la personne n'aime pas.
-- Coupes : équilibre les volumes (ample en haut → plus ajusté en bas, et inversement), sauf si la personne aime l'oversize total.
-- Météo : la chaleur des pièces doit correspondre à la température ; rien de léger sous 10 °C.
-- N'utilise aucune pièce portée ces 3 derniers jours.
-- Respecte l'humeur du jour et le style de la personne ; un des trois looks peut être un peu plus audacieux si elle l'accepte.
-- Les 3 looks doivent être nettement différents entre eux.
-- Donne à chaque look un nom court et chic (2 à 3 mots), une phrase d'ambiance, et un conseil concret de styliste (comment le porter).
-Réponds UNIQUEMENT en JSON valide, au format :
-{"outfits":[{"name":"","vibe":"","tip":"","garment_ids":["…"]}]}`;
+const MODELS = (Deno.env.get('GEMINI_OUTFIT_MODELS') ?? 'gemini-3.5-flash,gemini-3.5-flash-lite').split(',');
+const MAX_PER_DAY = 4;
+const MOODS: Mood[] = ['free', 'cozy', 'chic', 'relaxed', 'sporty', 'bold'];
+const DAY = 86_400_000;
 
 Deno.serve(async (req) => {
-  const auth = req.headers.get('Authorization') ?? '';
-  const admin = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!);
-  const { data: { user } } = await admin.auth.getUser(auth.replace('Bearer ', ''));
-  if (!user) return new Response('Non autorisé', { status: 401 });
+  if (req.method === 'OPTIONS') return new Response('ok', { headers: cors });
+  const admin = adminClient();
+  const user = await caller(req, admin);
+  if (!user) return json({ error: 'Non autorisé' }, 401);
 
-  const { mood = 'free', weather } = await req.json();
-  const [{ data: profile }, { data: garments }, { data: worn }] = await Promise.all([
-    admin.from('profiles').select('answers, styles').eq('id', user.id).single(),
-    admin.from('garments').select('*').eq('user_id', user.id).eq('archived', false),
-    admin.from('wear_history').select('garment_id, for_date').eq('user_id', user.id)
-      .gte('for_date', new Date(Date.now() - 3 * 86_400_000).toISOString().slice(0, 10)),
+  const body = await req.json().catch(() => ({}));
+  const mood: Mood = MOODS.includes(body.mood) ? body.mood : 'free';
+  const w = body.weather ?? {};
+  const weather: Weather = {
+    city: typeof w.city === 'string' ? w.city.slice(0, 60) : undefined,
+    tempC: Number.isFinite(w.tempC) ? Math.round(w.tempC) : 12,
+    minC: Number.isFinite(w.minC) ? Math.round(w.minC) : undefined,
+    maxC: Number.isFinite(w.maxC) ? Math.round(w.maxC) : undefined,
+    condition: ['sun', 'cloud', 'rain'].includes(w.condition) ? w.condition : 'cloud',
+  };
+  // Date du jour de la personne (envoyée par le téléphone), bornée à ±1 jour du serveur.
+  const serverDay = new Date().toISOString().slice(0, 10);
+  const day = /^\d{4}-\d{2}-\d{2}$/.test(body.date) && Math.abs(Date.parse(body.date) - Date.parse(serverDay)) <= DAY ? body.date : serverDay;
+
+  // 1. Déjà composés aujourd'hui pour cette humeur ? On les renvoie.
+  const { data: existing } = await admin.from('outfits').select('id, name, vibe, tip, garment_ids, mood, status')
+    .eq('user_id', user.id).eq('for_date', day).eq('source', 'ai').eq('mood', mood).neq('status', 'disliked').order('position');
+  if (existing?.length) return json({ outfits: existing, cached: true });
+
+  if ((await callsToday(admin, user.id, 'generate-outfits')) >= MAX_PER_DAY) return json({ outfits: [], fallback: true, reason: 'limite' });
+  const apiKey = Deno.env.get('GEMINI_API_KEY');
+  if (!apiKey) return json({ outfits: [], fallback: true, reason: 'ia' });
+
+  // 2. Contexte : profil, garde-robe, ce qui a été porté ou refusé récemment.
+  const since = new Date(Date.parse(day) - 60 * DAY).toISOString().slice(0, 10);
+  const [{ data: profile }, { data: garments }, { data: past }] = await Promise.all([
+    admin.from('profiles').select('answers, styles').eq('id', user.id).maybeSingle(),
+    admin.from('garments').select('id, category, subtype, label, color_name, fit, material, seasons, warmth, formality, pattern')
+      .eq('user_id', user.id).eq('archived', false),
+    admin.from('outfits').select('for_date, name, garment_ids, status').eq('user_id', user.id).gte('for_date', since).in('status', ['worn', 'disliked'])
+      .order('for_date', { ascending: false }).limit(60),
   ]);
 
-  const recent = new Set((worn ?? []).map((w) => w.garment_id));
-  const available = ((garments ?? []) as Garment[]).filter((g) => !recent.has(g.id));
-  // Liste compacte = moins de texte envoyé = moins cher.
-  const wardrobe = available.map((g) =>
-    `${g.id} | ${g.category} | ${g.label} | ${g.color_name} | coupe ${g.fit} | chaleur ${g.warmth}/3 | habillé ${g.formality}/3${g.pattern ? ` | ${g.pattern}` : ''}`).join('\n');
+  const lastWorn = new Map<string, string>();
+  for (const o of past ?? []) if (o.status === 'worn') for (const id of o.garment_ids) if (!lastWorn.has(id)) lastWorn.set(id, o.for_date);
+  const daysSince = (id: string) => (lastWorn.has(id) ? Math.round((Date.parse(day) - Date.parse(lastWorn.get(id)!)) / DAY) : null);
 
-  const userPrompt = `Profil : ${JSON.stringify({ styles: profile?.styles, reponses: profile?.answers })}
-Météo : ${JSON.stringify(weather)}
-Humeur du jour : ${mood}
-Garde-robe disponible (id | catégorie | nom | couleur | …) :
-${wardrobe}`;
+  const all: WardrobeItem[] = (garments ?? []).map((g) => ({ ...g, days_since_worn: daysSince(g.id) }));
+  // Pièces portées ces 2 derniers jours mises de côté… sauf si la garde-robe devient trop petite.
+  const rested = all.filter((g) => g.category === 'accessory' || (g.days_since_worn ?? 99) > 2);
+  const enough = (list: WardrobeItem[]) => list.some((g) => g.category === 'shoes') &&
+    (list.some((g) => g.category === 'dress') || (list.some((g) => g.category === 'top') && list.some((g) => g.category === 'bottom')));
+  const available = enough(rested) ? rested : all;
+  if (!enough(available)) return json({ outfits: [], fallback: true, reason: 'garde-robe' });
 
-  const apiKey = Deno.env.get('AI_API_KEY');
-  if (!apiKey) return new Response(JSON.stringify({ error: 'IA non configurée' }), { status: 503 });
+  const label = new Map(all.map((g) => [g.id, g.label]));
+  const describe = (ids: string[]) => ids.map((id) => label.get(id)).filter(Boolean).join(' + ');
+  const recentOutfits = (past ?? []).filter((o) => o.status === 'worn').slice(0, 7).map((o) => `${o.for_date} : ${describe(o.garment_ids)}`);
+  const disliked = (past ?? []).filter((o) => o.status === 'disliked').slice(0, 8).map((o) => describe(o.garment_ids));
 
-  // Appel au fournisseur d'IA : à brancher après les tests (voir docs/ARCHITECTURE.md, « Choix de l'IA »).
-  const result = await callModel(apiKey, Deno.env.get('AI_MODEL') ?? '', SYSTEM_PROMPT, userPrompt);
-  const ids = new Set(available.map((g) => g.id));
-  const outfits = (result.outfits ?? [])
-    .filter((o: { garment_ids: string[] }) => o.garment_ids?.length && o.garment_ids.every((id) => ids.has(id))) // jamais de pièce inventée
-    .slice(0, 3);
+  const prompt = buildOutfitPrompt({ wardrobe: available, answers: profile?.answers ?? {}, styles: profile?.styles ?? [], weather, mood, recentOutfits, disliked });
 
-  const today = new Date().toISOString().slice(0, 10);
-  await admin.from('outfits').insert(outfits.map((o: { name: string; vibe: string; tip: string; garment_ids: string[] }, i: number) => ({
-    user_id: user.id, for_date: today, position: i + 1, name: o.name, vibe: o.vibe, tip: o.tip,
-    mood, weather, garment_ids: o.garment_ids, source: 'ai',
-  })));
+  // 3. Appel à l'IA, contrôle qualité, enregistrement.
+  try {
+    const r = await geminiJsonWithFallback<{ outfits: ProposedOutfit[] }>(MODELS, {
+      apiKey, system: OUTFIT_SYSTEM, schema: OUTFIT_SCHEMA, parts: [{ text: prompt }], temperature: 0.8, thinking: 'low', timeoutMs: 30_000,
+    });
+    const { ok, rejected } = validateOutfits(r.data.outfits ?? [], available, weather);
+    await logAiCall(admin, user.id, {
+      fn: 'generate-outfits', model: r.model, tokens_in: r.tokensIn, tokens_out: r.tokensOut, cost_eur: r.costEur, ms: r.ms,
+      proposed: r.data.outfits?.length ?? 0, kept: ok.length, rejected,
+    });
+    if (!ok.length) return json({ outfits: [], fallback: true, reason: 'qualité' });
 
-  return new Response(JSON.stringify({ outfits }), { headers: { 'Content-Type': 'application/json' } });
+    const { data: saved, error } = await admin.from('outfits').insert(ok.map((o, i) => ({
+      user_id: user.id, for_date: day, position: i + 1, name: o.name, vibe: o.vibe, tip: o.tip, mood, weather,
+      garment_ids: o.garment_ids, source: 'ai', ai_cost_eur: Number((r.costEur / ok.length).toFixed(5)),
+    }))).select('id, name, vibe, tip, garment_ids, mood, status');
+    if (error) return json({ outfits: ok.map((o, i) => ({ id: `tmp-${i}`, ...o, mood, status: 'proposed' })) });
+    return json({ outfits: saved });
+  } catch (e) {
+    await logAiCall(admin, user.id, { fn: 'generate-outfits', error: String(e).slice(0, 200) });
+    return json({ outfits: [], fallback: true, reason: 'ia' });
+  }
 });
-
-async function callModel(_apiKey: string, _model: string, _system: string, _user: string): Promise<{ outfits?: unknown[] }> {
-  throw new Error('Fournisseur d’IA à brancher (étape 4 du plan).');
-}

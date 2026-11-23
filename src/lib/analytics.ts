@@ -23,6 +23,7 @@ export type EventName =
   | 'garment_removed'
   | 'outfit_viewed'
   | 'outfit_worn'
+  | 'outfit_disliked'
   | 'mood_changed'
   | 'paywall_view'
   | 'notification_time_set';

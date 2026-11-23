@@ -43,6 +43,8 @@ export async function getTodayWeather(city: string): Promise<Weather | null> {
     const weather: Weather = {
       city: geo.name,
       tempC: Math.round(min * 0.6 + max * 0.4),
+      minC: Math.round(min),
+      maxC: Math.round(max),
       condition: rainy ? 'rain' : toCondition(j.daily.weather_code[0]),
     };
     cache.set(key, { at: Date.now(), weather });

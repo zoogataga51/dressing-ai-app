@@ -1,20 +1,25 @@
+import { useRouter } from 'expo-router';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { ScrollView, useWindowDimensions, View } from 'react-native';
 import Animated, {
-  FadeInDown, FadeOut, interpolate, useAnimatedScrollHandler, useAnimatedStyle, useSharedValue, ZoomIn,
+  FadeIn, FadeInDown, FadeOut, interpolate, useAnimatedScrollHandler, useAnimatedStyle, useSharedValue, withRepeat, withTiming, ZoomIn,
   type SharedValue,
 } from 'react-native-reanimated';
 import { AppText } from '@/components/AppText';
 import { GarmentTile } from '@/components/GarmentTile';
 import { Icon } from '@/components/Icon';
+import { PressableScale } from '@/components/PressableScale';
 import { Button, Chip, IconButton, Screen, Sticker } from '@/components/ui';
 import { MOCK_WEATHER } from '@/data/mock';
 import { outfitTint, readableMutedOn, readableOn } from '@/lib/color';
+import { fetchAiOutfits } from '@/lib/ai';
 import { track } from '@/lib/analytics';
+import { supabase } from '@/lib/supabase';
 import { localDate } from '@/lib/date';
 import { generateOutfits } from '@/lib/outfitEngine';
 import { getTodayWeather } from '@/lib/weather';
 import { useStore } from '@/state/AppStore';
+import { useAuth } from '@/state/AuthStore';
 import { useTheme } from '@/theme/ThemeProvider';
 import { motion, space } from '@/theme/tokens';
 import { MOODS, type Garment, type Mood, type Outfit, type Weather } from '@/types';
@@ -70,15 +75,37 @@ function OutfitCard({ outfit, pieces, index, total, width, scrollX, moodLabel }:
   );
 }
 
+/** Carte d'attente pendant que l'IA compose les looks (quelques secondes). */
+function StylistLoading({ width }: { width: number }) {
+  const { colors } = useTheme();
+  const pulse = useSharedValue(0.55);
+  useEffect(() => { pulse.value = withRepeat(withTiming(1, { duration: motion.slow * 2 }), -1, true); }, [pulse]);
+  const anim = useAnimatedStyle(() => ({ opacity: pulse.value }));
+  return (
+    <Animated.View entering={FadeIn.duration(motion.base)} style={{ marginHorizontal: SIDE, width, height: 360, borderRadius: 28, backgroundColor: colors.surface,
+      padding: 20, gap: 14, justifyContent: 'center', alignItems: 'center' }}>
+      <Animated.View style={anim}><Icon name="sparkle" size={36} color={colors.primary} /></Animated.View>
+      <AppText variant="heading" style={{ textAlign: 'center' }}>Ton styliste compose tes looks…</AppText>
+      <AppText muted style={{ textAlign: 'center' }}>Il regarde la météo, ton humeur et ce que tu as porté ces derniers jours.</AppText>
+    </Animated.View>
+  );
+}
+
+const AI_TIMEOUT = 15_000;
+const withTimeout = <T,>(p: Promise<T>, ms: number, fallback: T) => Promise.race([p, new Promise<T>((r) => setTimeout(() => r(fallback), ms))]);
+
 export default function TodayScreen() {
   const { colors } = useTheme();
+  const router = useRouter();
   const { wardrobe, profile, wearOutfit, history } = useStore();
+  const { userId } = useAuth();
   const { width: screenW } = useWindowDimensions();
   const cardW = screenW - SIDE * 2;
   const [weather, setWeather] = useState<Weather>({ ...MOCK_WEATHER, city: profile.city || MOCK_WEATHER.city });
+  const [weatherReady, setWeatherReady] = useState(false);
   useEffect(() => {
     let alive = true;
-    getTodayWeather(profile.city || 'Paris').then((w) => { if (alive && w) setWeather(w); });
+    getTodayWeather(profile.city || 'Paris').then((w) => { if (alive && w) setWeather(w); }).finally(() => { if (alive) setWeatherReady(true); });
     return () => { alive = false; };
   }, [profile.city]);
 
@@ -87,7 +114,32 @@ export default function TodayScreen() {
   const today = localDate();
   const wornToday = history.find((h) => h.date === today);
 
-  const outfits = useMemo(() => generateOutfits(wardrobe, weather, mood, 3), [mood, wardrobe.length, weather.tempC, weather.condition]); // eslint-disable-line react-hooks/exhaustive-deps
+  const ruleOutfits = useMemo(() => generateOutfits(wardrobe, weather, mood, 3), [mood, wardrobe.length, weather.tempC, weather.condition]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Avec un compte : looks composés par l'IA (gardés en mémoire par humeur). Sinon, ou en cas d'échec : moteur par règles.
+  const aiKey = `${today}:${mood}`;
+  const [aiLooks, setAiLooks] = useState<Record<string, Outfit[] | null>>({});
+  const [hidden, setHidden] = useState<Set<string>>(new Set());
+  const useAi = !!userId && ruleOutfits.length > 0;
+  const aiPending = useAi && !(aiKey in aiLooks);
+  useEffect(() => {
+    if (!useAi || !weatherReady || aiKey in aiLooks) return;
+    let alive = true;
+    withTimeout(fetchAiOutfits(mood, weather, wardrobe), AI_TIMEOUT, null).then((list) => {
+      if (alive) setAiLooks((m) => ({ ...m, [aiKey]: list }));
+    });
+    return () => { alive = false; };
+  }, [useAi, weatherReady, aiKey]); // eslint-disable-line react-hooks/exhaustive-deps
+  const outfits = (useAi ? aiLooks[aiKey] ?? (aiPending ? [] : ruleOutfits) : ruleOutfits).filter((o) => !hidden.has(o.id));
+
+  // « Pas pour moi » : on retire le look et, s'il vient de l'IA, on s'en souvient pour les prochains jours.
+  const dislike = (o: Outfit) => {
+    setHidden((h) => new Set(h).add(o.id));
+    setActive(0);
+    listRef.current?.scrollToOffset({ offset: 0, animated: true });
+    track('outfit_disliked', { source: o.source ?? 'rules', mood });
+    if (o.source === 'ai' && supabase) supabase.from('outfits').update({ status: 'disliked' }).eq('id', o.id).then(() => {}, () => {});
+  };
   const byId = useMemo(() => new Map(wardrobe.map((g) => [g.id, g])), [wardrobe]);
   const scrollX = useSharedValue(0);
   const listRef = useRef<Animated.FlatList<Outfit> | null>(null);
@@ -112,10 +164,18 @@ export default function TodayScreen() {
           <Sticker tone="highlight" icon={weather.condition} label={`${weather.city} · ${weather.tempC}°`} />
         </View>
 
-        {outfits.length === 0 ? (
+        {aiPending ? (
+          <StylistLoading width={cardW} />
+        ) : outfits.length === 0 && ruleOutfits.length > 0 ? (
+          <View style={{ marginHorizontal: SIDE, padding: 20, borderRadius: 28, backgroundColor: colors.surface, gap: 8 }}>
+            <AppText variant="heading">C’est noté</AppText>
+            <AppText muted>On retient ce que tu n’aimes pas. Change d’humeur ci-dessous pour d’autres idées.</AppText>
+          </View>
+        ) : outfits.length === 0 ? (
           <View style={{ marginHorizontal: SIDE, padding: 20, borderRadius: 28, backgroundColor: colors.surface, gap: 8 }}>
             <AppText variant="heading">Encore quelques pièces</AppText>
             <AppText muted>Ajoute au moins un haut, un bas et une paire de chaussures pour recevoir ton premier look.</AppText>
+            <Button label="Ajouter des pièces" icon="camera" onPress={() => router.push('/ajout')} style={{ marginTop: 6 }} />
           </View>
         ) : (
           <Animated.FlatList
@@ -168,7 +228,14 @@ export default function TodayScreen() {
               <AppText variant="bodyStrong" color={colors.onInverse}>C’est noté : {wornToday.outfit.name}. Belle journée !</AppText>
             </Animated.View>
           ) : (
-            <Button label="Je porte ce look" disabled={!outfits[active]} onPress={() => { if (!outfits[active]) return; wearOutfit(outfits[active], mood, weather.tempC); track('outfit_worn', { position: active + 1, mood }); }} />
+            <View style={{ gap: 6 }}>
+            <Button label="Je porte ce look" disabled={!outfits[active]} onPress={() => { if (!outfits[active]) return; wearOutfit(outfits[active], mood, weather.tempC); track('outfit_worn', { position: active + 1, mood, source: outfits[active].source ?? 'rules' }); }} />
+            {outfits[active] ? (
+              <PressableScale onPress={() => dislike(outfits[active])} style={{ alignSelf: 'center', paddingVertical: 8, paddingHorizontal: 16 }}>
+                <AppText variant="smallStrong" muted>Pas pour moi</AppText>
+              </PressableScale>
+            ) : null}
+            </View>
           )}
         </View>
 

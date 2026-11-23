@@ -26,7 +26,7 @@ type ProfileRow = {
 type GarmentRow = {
   id: string; user_id: string; category: Garment['category']; subtype: string; label: string; color_name: string; color_hex: string;
   fit: Garment['fit']; material: string | null; seasons: string[]; warmth: number; formality: number;
-  photo_path?: string | null; cutout_path?: string | null; archived?: boolean; created_at?: string;
+  pattern?: string | null; photo_path?: string | null; cutout_path?: string | null; archived?: boolean; created_at?: string;
 };
 
 type OutfitRow = {
@@ -64,7 +64,7 @@ function rowToProfile(r: ProfileRow, duels: DuelChoice[]): Partial<Profile> {
 function garmentToRow(g: Garment, userId: string): GarmentRow {
   return {
     id: g.id, user_id: userId, category: g.category, subtype: g.subtype, label: g.label, color_name: g.colorName, color_hex: g.colorHex,
-    fit: g.fit, material: g.material || null, seasons: g.seasons, warmth: g.warmth, formality: g.formality,
+    fit: g.fit, material: g.material || null, seasons: g.seasons, warmth: g.warmth, formality: g.formality, pattern: g.pattern ?? null,
     // Chemins des photos envoyés seulement s'ils sont connus : une modification ne doit jamais les effacer.
     ...(g.photoPath ? { photo_path: g.photoPath } : {}),
     ...(g.cutoutPath ? { cutout_path: g.cutoutPath } : {}),
@@ -74,7 +74,7 @@ function garmentToRow(g: Garment, userId: string): GarmentRow {
 function rowToGarment(r: GarmentRow): Garment {
   return {
     id: r.id, category: r.category, subtype: r.subtype, label: r.label, colorName: r.color_name, colorHex: r.color_hex,
-    fit: r.fit, material: r.material ?? '', seasons: r.seasons as Season[], warmth: r.warmth as Garment['warmth'],
+    fit: r.fit, material: r.material ?? '', pattern: r.pattern ?? undefined, seasons: r.seasons as Season[], warmth: r.warmth as Garment['warmth'],
     formality: r.formality as Garment['formality'], photoPath: r.photo_path ?? undefined, cutoutPath: r.cutout_path ?? undefined,
     wearCount: 0,
   };
@@ -85,7 +85,7 @@ function rowToHistory(r: OutfitRow): HistoryEntry {
     date: r.for_date,
     mood: r.mood as Mood,
     tempC: r.weather?.tempC ?? 0,
-    outfit: { id: r.id, name: r.name, vibe: r.vibe ?? '', tip: r.tip ?? undefined, garmentIds: r.garment_ids },
+    outfit: { id: r.id, name: r.name, vibe: r.vibe ?? '', tip: r.tip ?? undefined, garmentIds: r.garment_ids, source: r.source },
   };
 }
 
@@ -204,7 +204,13 @@ async function run(userId: string, op: Op): Promise<void> {
       return;
     case 'worn': {
       const e = op.entry;
+      // Un seul look porté par jour : on remet les autres looks IA du jour en « proposé », on retire l'ancien look « règles ».
+      check(await sb.from('outfits').update({ status: 'proposed' }).eq('for_date', e.date).eq('status', 'worn').eq('source', 'ai'));
       check(await sb.from('outfits').delete().eq('for_date', e.date).eq('status', 'worn').eq('source', 'rules'));
+      if (e.outfit.source === 'ai' && isUuid(e.outfit.id)) {
+        check(await sb.from('outfits').update({ status: 'worn' }).eq('id', e.outfit.id));
+        return;
+      }
       const row: OutfitRow = {
         id: op.rowId, user_id: userId, for_date: e.date, position: 1, name: e.outfit.name, vibe: e.outfit.vibe || null,
         tip: e.outfit.tip ?? null, mood: e.mood, weather: { tempC: e.tempC }, garment_ids: e.outfit.garmentIds, source: 'rules', status: 'worn',
@@ -213,6 +219,8 @@ async function run(userId: string, op: Op): Promise<void> {
     }
   }
 }
+
+const isUuid = (s: string) => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(s);
 
 let flushing: Promise<boolean> | null = null;
 

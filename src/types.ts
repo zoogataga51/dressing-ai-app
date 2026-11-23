@@ -24,6 +24,7 @@ export type Garment = {
   colorHex: string;
   fit: Fit;
   material: string;
+  pattern?: string; // « Uni », « Rayé »…
   seasons: Season[];
   warmth: Warmth;
   formality: 1 | 2 | 3; // 1 décontracté → 3 habillé
@@ -40,6 +41,8 @@ export type Outfit = {
   vibe: string; // phrase courte : « Chaud et lumineux pour un ciel gris »
   garmentIds: string[];
   tip?: string;
+  /** « ai » : composé par la fonction serveur (id = ligne de la table outfits) ; « rules » : moteur du téléphone. */
+  source?: 'ai' | 'rules';
 };
 
 export type Mood = 'free' | 'cozy' | 'chic' | 'relaxed' | 'sporty' | 'bold';
@@ -53,6 +56,6 @@ export const MOODS: { id: Mood; label: string }[] = [
   { id: 'bold', label: 'Audacieux' },
 ];
 
-export type Weather = { city: string; tempC: number; condition: 'sun' | 'cloud' | 'rain' };
+export type Weather = { city: string; tempC: number; minC?: number; maxC?: number; condition: 'sun' | 'cloud' | 'rain' };
 
 export type HistoryEntry = { date: string; outfit: Outfit; tempC: number; mood: Mood };

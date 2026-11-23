@@ -61,3 +61,10 @@ garde-robe vide. Migration 0002 exécutée (looks « rules » insérables par l'
 RLS testée en SQL (2 faux comptes, transaction annulée) : chacun ne voit que ses données. Réglages Auth : code
 6 chiffres, 15 min, liens dressingai:// et exp:// autorisés. BLOCAGE : modèles d'e-mail non modifiables sans SMTP
 perso (offre gratuite) → l'e-mail contient un lien, pas de code ; envoi limité aux membres de l'équipe, 2/h.
+
+## 2026-11-23 — [cloud] IA branchée (photos + looks)
+analyze-garment (Gemini 3.5 Flash-Lite, ~0,08 c€/photo) et generate-outfits (Gemini 3.5 Flash, repli Flash-Lite,
+0,4–0,8 c€/génération, cache par humeur, 4/jour max, contrôle qualité serveur) déployées via l'API. Test de bout en
+bout avec un compte temporaire (créé en SQL, supprimé via delete-account) : tout OK, coûts tracés dans events.
+Appli : vraie analyse à l'ajout, looks IA avec écran d'attente, « Pas pour moi », secours par règles.
+Détourage : sur le téléphone (gratuit) au passage aux builds de dev ; modèles d'image Gemini = payants (refusés).

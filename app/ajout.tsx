@@ -10,12 +10,13 @@ import { AppText } from '@/components/AppText';
 import { ChipRow } from '@/components/ChipRow';
 import { Icon } from '@/components/Icon';
 import { Button, Chip, IconButton, ProgressBar, Screen, Sticker } from '@/components/ui';
-import { analyzeGarment, AI_ENABLED, type GarmentGuess } from '@/lib/ai';
+import { analyzeGarment, type GarmentGuess } from '@/lib/ai';
 import { track } from '@/lib/analytics';
 import { newId, useStore } from '@/state/AppStore';
+import { useAuth } from '@/state/AuthStore';
 import { useTheme } from '@/theme/ThemeProvider';
 import { fonts, motion } from '@/theme/tokens';
-import { CATEGORY_OPTIONS as CATEGORIES, COLOR_OPTIONS as COLORS, FIT_OPTIONS as FITS, SEASON_OPTIONS as SEASONS } from '@/data/garmentOptions';
+import { CATEGORY_OPTIONS as CATEGORIES, COLOR_OPTIONS as COLORS, FIT_OPTIONS as FITS, PATTERN_OPTIONS as PATTERNS, SEASON_OPTIONS as SEASONS } from '@/data/garmentOptions';
 
 const TARGET = 10; // nombre de pièces avant le premier look
 
@@ -37,11 +38,13 @@ export default function AddGarmentScreen() {
   const router = useRouter();
   const { onboarding } = useLocalSearchParams<{ onboarding?: string }>();
   const { addGarment } = useStore();
+  const { userId } = useAuth();
 
   const [photo, setPhoto] = useState<string | null>(null);
   const [scanning, setScanning] = useState(false);
   const [guess, setGuess] = useState<GarmentGuess | null>(null);
   const [added, setAdded] = useState(0);
+  const [garmentId, setGarmentId] = useState(newId);
 
   const pickPhoto = async (fromCamera: boolean) => {
     const perm = fromCamera ? await ImagePicker.requestCameraPermissionsAsync() : await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -57,7 +60,7 @@ export default function AddGarmentScreen() {
     setGuess(null);
     setScanning(true);
     try {
-      setGuess(await analyzeGarment(uri));
+      setGuess(await analyzeGarment(uri, { userId, garmentId }));
     } finally {
       setScanning(false);
     }
@@ -65,15 +68,18 @@ export default function AddGarmentScreen() {
 
   const save = () => {
     if (!guess || !photo) return;
-    const label = `${guess.subtype} ${guess.colorName.toLowerCase()}`;
-    addGarment({ id: newId(), ...guess, label, imageUrl: guess.cutoutUrl ?? photo, wearCount: 0 });
+    const { confidence: _c, isGarment: _g, cutoutUrl, label: aiLabel, ...fields } = guess;
+    const label = aiLabel ?? `${guess.subtype} ${guess.colorName.toLowerCase()}`;
+    addGarment({ id: garmentId, ...fields, label, imageUrl: cutoutUrl ?? photo, wearCount: 0 });
+    setGarmentId(newId()); // la pièce suivante aura sa propre photo
     setAdded((n) => n + 1);
     track('garment_added', { category: guess.category, onboarding: inOnboarding });
     setPhoto(null);
     setGuess(null);
   };
 
-  const set = (patch: Partial<GarmentGuess>) => setGuess((g) => (g ? { ...g, ...patch } : g));
+  // Si on corrige le type ou la couleur, le nom proposé par l'IA ne colle plus : on le recompose.
+  const set = (patch: Partial<GarmentGuess>) => setGuess((g) => (g ? { ...g, ...patch, ...('category' in patch || 'colorName' in patch ? { label: undefined } : {}) } : g));
   const inOnboarding = onboarding === '1';
   const remaining = Math.max(0, TARGET - added);
 
@@ -107,7 +113,7 @@ export default function AddGarmentScreen() {
               </Animated.View>
               {scanning ? <ScanLine /> : null}
               <View style={{ position: 'absolute', top: 14, left: 14 }}>
-                <Sticker tone="highlight" icon="sparkle" label={scanning ? 'Analyse en cours…' : AI_ENABLED ? 'Reconnu par l’IA' : 'Mode démo : vérifie les infos'} />
+                <Sticker tone="highlight" icon="sparkle" label={scanning ? 'Analyse en cours…' : !guess ? '' : !guess.isGarment ? 'Pas de vêtement repéré' : guess.confidence > 0 ? 'Reconnu par l’IA' : 'Vérifie les infos'} />
               </View>
             </>
           ) : (
@@ -124,7 +130,8 @@ export default function AddGarmentScreen() {
 
         {guess ? (
           <Animated.View entering={FadeInDown.duration(motion.slow)} style={{ gap: 16 }}>
-            <AppText variant="eyebrow">Touche pour corriger</AppText>
+            {guess.label ? <AppText variant="heading">{guess.label}</AppText> : null}
+            <AppText variant="eyebrow">{guess.isGarment ? 'Touche pour corriger' : 'On ne voit pas bien le vêtement : vérifie ou reprends la photo'}</AppText>
             <ChipRow label="Type">
               {CATEGORIES.map((c) => <Chip key={c.id} label={c.label} selected={guess.category === c.id} onPress={() => set({ category: c.id })} />)}
             </ChipRow>
@@ -135,6 +142,9 @@ export default function AddGarmentScreen() {
             </ChipRow>
             <ChipRow label="Coupe">
               {FITS.map((f) => <Chip key={f.id} label={f.label} selected={guess.fit === f.id} onPress={() => set({ fit: f.id })} />)}
+            </ChipRow>
+            <ChipRow label="Motif">
+              {PATTERNS.map((p) => <Chip key={p} label={p} selected={(guess.pattern ?? 'Uni') === p} onPress={() => set({ pattern: p })} />)}
             </ChipRow>
             <ChipRow label="Saisons">
               {SEASONS.map((s) => (

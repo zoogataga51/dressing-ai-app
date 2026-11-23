@@ -45,27 +45,33 @@ modifier ce fichier.
   2 e-mails/heure, et interdit de personnaliser le modèle (donc pas de code dans l'e-mail, seulement le lien).
   Avant la bêta : brancher un SMTP (nom de domaine + Resend gratuit), puis mettre `{{ .Token }}` dans les modèles.
 
-## Génération des looks
+## Génération des looks (branchée le 2026-11-23)
 
-- **Aujourd'hui** : moteur par règles (`src/lib/outfitEngine.ts`). Il sert de démo, de
-  secours si l'IA ne répond pas, et de pré-filtre pour réduire le coût de l'IA.
-- **Cible** : fonction serveur `supabase/functions/generate-outfits` qui envoie à un modèle
-  d'IA le profil, la météo, l'humeur et la liste des pièces disponibles. Le prompt et les
-  règles y sont déjà écrits. Les looks renvoyés sont vérifiés (aucune pièce inventée).
-
-### Choix de l'IA (à faire pendant la bêta)
-
-Tester 2 à 3 modèles sur les mêmes 20 garde-robes, noter la qualité des looks et mesurer le
-coût par utilisateur et par mois. Objectif : coût IA < 0,50 € par utilisateur et par mois
-(sur 4,95 € de revenu net mensuel). Le coût de chaque génération est enregistré dans
-`outfits.ai_cost_eur`.
+- **IA** : `supabase/functions/generate-outfits` → Gemini 3.5 Flash (repli Flash-Lite). Règles du styliste,
+  résumé du profil et contrôle qualité dans `supabase/functions/_shared/outfits.ts` : toute tenue incomplète,
+  avec une pièce inventée, inadaptée à la météo ou incohérente en formalité est refusée.
+- Cache : même humeur le même jour → mêmes looks (aucun coût). Plafond : 4 générations par jour et par personne.
+- « Pas pour moi » → statut `disliked`, rappelé à l'IA les jours suivants. Pièces portées depuis moins de 3 jours
+  mises de côté (sauf petite garde-robe).
+- **Secours** : moteur par règles du téléphone (`src/lib/outfitEngine.ts`), utilisé en démo, hors ligne, si l'IA
+  échoue ou dépasse 15 s.
+- **Banc d'essai** : `NODE_USE_ENV_PROXY=1 node --experimental-strip-types scripts/looks-lab/run.ts <modèle>`
+  (garde-robes de test dans `scripts/looks-lab/wardrobes.ts`).
+- **Coût** : chaque appel est tracé dans `events` (`name = 'ai_call'`, modèle, jetons, coût en €).
+  Mesuré le 2026-11-23 : ~0,08 c€ par photo (Flash-Lite), 0,4 à 0,8 c€ par génération de looks (Flash).
 
 ## Photos et détourage
 
-`src/lib/ai.ts` est aujourd'hui simulé. Cible : photo → Supabase Storage → fonction serveur
-→ détourage + reconnaissance (type, couleur, coupe, matière, saison) → validation par
-l'utilisateur. Les images des duels seront **générées par IA** à partir des `imagePrompt`
-(aucune photo Pinterest ni personne réelle, pour éviter tout problème de droits).
+`analyze-garment` : la photo part dans le bucket privé, puis Gemini 3.5 Flash-Lite renvoie type, couleur (liste
+fixe + teinte réelle), coupe, matière, motif, saisons, chaleur, formalité. L'utilisateur valide ou corrige.
+
+**Détourage — décision** : sur le téléphone, gratuit (iOS Vision « détourer le sujet », Android ML Kit Subject
+Segmentation), via un module natif quand on passera aux builds de développement (étape 9) : impossible dans Expo
+Go. Les modèles d'image de Gemini sont payants (refusés sur l'offre gratuite) et remove.bg coûte ~0,20 € l'image.
+En attendant, la photo recadrée carrée sert d'image.
+
+Les images des duels seront **générées par IA** à partir des `imagePrompt` (aucune photo Pinterest ni personne
+réelle) : nécessite l'offre payante de Gemini (~0,04 € l'image, ~2 € pour les 40 images).
 
 ## Données et RGPD
 
@@ -79,6 +85,6 @@ l'utilisateur. Les images des duels seront **générées par IA** à partir des 
 1. Créer le projet Supabase, exécuter `supabase/migrations/0001_init.sql`, remplir `.env`.
 2. Brancher l'authentification (e-mail, Apple, Google) sur l'écran d'accueil.
 3. Synchroniser `src/state/AppStore.tsx` avec Supabase.
-4. Choisir l'IA (tests), brancher `generate-outfits` et l'analyse des photos.
+4. ~~Choisir l'IA, brancher `generate-outfits` et l'analyse des photos~~ (fait).
 5. Notifications du matin (Expo Notifications).
 6. RevenueCat.
