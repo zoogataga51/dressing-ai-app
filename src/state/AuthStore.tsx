@@ -23,8 +23,17 @@ type Auth = {
   /** Mode démo choisi (pas de compte, données d'exemple). */
   demo: boolean;
   setDemo: (on: boolean) => void;
+  /** Compte créé sans e-mail : sauvegardé sur le serveur, mais perdu si l'appli est supprimée avant d'ajouter un e-mail. */
+  anonymous: boolean;
+  /** Démarre sans e-mail (inscription en un geste). */
+  startAnonymous: () => Promise<Result>;
+  /** Connexion à un compte existant (ou création) : envoie le code. */
   sendCode: (email: string) => Promise<Result>;
   verifyCode: (email: string, code: string) => Promise<Result>;
+  /** Sécurise un compte sans e-mail : envoie un code à cette adresse… */
+  linkEmail: (email: string) => Promise<Result>;
+  /** …puis vérifie le code. Le compte (et sa garde-robe) garde le même identifiant. */
+  verifyLinkCode: (email: string, code: string) => Promise<Result>;
   signOut: () => Promise<void>;
 };
 
@@ -42,6 +51,7 @@ function frenchError(message: string | undefined, status?: number): string {
   }
   if (m.includes('expired') || (m.includes('invalid') && m.includes('token'))) return 'Ce code est incorrect ou a expiré. Vérifie-le ou demande-en un nouveau.';
   if (m.includes('invalid') && m.includes('email')) return 'Cette adresse e-mail ne semble pas valide.';
+  if (m.includes('already') && (m.includes('registered') || m.includes('exists'))) return 'Cette adresse est déjà liée à un autre compte. Utilise « J’ai déjà un compte » pour t’y connecter.';
   if (m.includes('signups not allowed')) return 'Les inscriptions sont fermées pour le moment.';
   if (m.includes('network') || m.includes('fetch')) return 'Pas de connexion Internet. Vérifie ton réseau et réessaie.';
   return 'Petit souci de notre côté. Réessaie dans un instant.';
@@ -98,6 +108,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     email: session?.user.email ?? null,
     demo: demo && !session,
     setDemo,
+    anonymous: !!session?.user.is_anonymous,
+    startAnonymous: async () => {
+      if (!supabase) return { ok: false, message: 'La connexion n’est pas disponible.' };
+      const { error } = await supabase.auth.signInAnonymously();
+      if (error) return { ok: false, message: frenchError(error.message, error.status) };
+      setDemo(false);
+      return { ok: true };
+    },
+    linkEmail: async (email) => {
+      if (!supabase) return { ok: false, message: 'La connexion n’est pas disponible.' };
+      const { error } = await supabase.auth.updateUser({ email: email.trim().toLowerCase() }, { emailRedirectTo: Linking.createURL('connexion') });
+      return error ? { ok: false, message: frenchError(error.message, error.status) } : { ok: true };
+    },
+    verifyLinkCode: async (email, code) => {
+      if (!supabase) return { ok: false, message: 'La connexion n’est pas disponible.' };
+      const { error } = await supabase.auth.verifyOtp({ email: email.trim().toLowerCase(), token: code.trim(), type: 'email_change' });
+      if (error) return { ok: false, message: frenchError(error.message, error.status) };
+      await supabase.auth.refreshSession().catch(() => {});
+      return { ok: true };
+    },
     sendCode: async (email) => {
       if (!supabase) return { ok: false, message: 'La connexion n’est pas disponible.' };
       const { error } = await supabase.auth.signInWithOtp({

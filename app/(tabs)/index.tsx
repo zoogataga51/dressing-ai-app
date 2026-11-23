@@ -99,7 +99,7 @@ export default function TodayScreen() {
   const { colors } = useTheme();
   const router = useRouter();
   const { wardrobe, profile, wearOutfit, history } = useStore();
-  const { userId } = useAuth();
+  const { userId, anonymous } = useAuth();
   const { width: screenW } = useWindowDimensions();
   const cardW = screenW - SIDE * 2;
   const [weather, setWeather] = useState<Weather>({ ...MOCK_WEATHER, city: profile.city || MOCK_WEATHER.city });
@@ -251,6 +251,18 @@ export default function TodayScreen() {
             </View>
           )}
         </View>
+
+        {anonymous && wardrobe.length >= 5 ? (
+          <PressableScale onPress={() => router.push('/onboarding/connexion?mode=link')}
+            style={{ marginHorizontal: SIDE, flexDirection: 'row', alignItems: 'center', gap: 12, padding: 14, borderRadius: 18, backgroundColor: colors.primarySoft }}>
+            <Icon name="user" size={20} color={colors.primary} />
+            <View style={{ flex: 1, gap: 2 }}>
+              <AppText variant="smallStrong">Sécurise ta garde-robe</AppText>
+              <AppText variant="small" muted>Ajoute ton e-mail pour la retrouver sur n’importe quel téléphone.</AppText>
+            </View>
+            <Icon name="chevronRight" size={18} color={colors.primary} />
+          </PressableScale>
+        ) : null}
 
         {outfits[active]?.tip ? (
           <Animated.View key={outfits[active].id} entering={FadeInDown.duration(motion.base)}

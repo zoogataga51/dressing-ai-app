@@ -123,7 +123,11 @@ export default function ProfileScreen() {
         <Section title="Compte et données" delay={240}>
           {auth.userId ? (
             <>
-              <Row label="Adresse e-mail" value={auth.email ?? ''} />
+              {auth.anonymous ? (
+                <Row label="Sécuriser mon compte" value="Ajouter mon e-mail" onPress={() => router.push('/onboarding/connexion?mode=link')} />
+              ) : (
+                <Row label="Adresse e-mail" value={auth.email ?? ''} />
+              )}
               <Row label="Exporter mes données" onPress={() => {
                 // Droit à la portabilité (RGPD) : une copie lisible de tout ce qu'on garde sur toi.
                 const data = { exporte_le: new Date().toISOString(), email: auth.email, profil: profile,
@@ -131,7 +135,9 @@ export default function ProfileScreen() {
                 Share.share({ title: 'Mes données Dressing AI', message: JSON.stringify(data, null, 2) }).catch(() => {});
               }} />
               <Row label="Se déconnecter" onPress={() =>
-                Alert.alert('Se déconnecter ?', 'Ta garde-robe reste sauvegardée sur ton compte.', [
+                Alert.alert('Se déconnecter ?', auth.anonymous
+                  ? 'Ton compte n’a pas d’e-mail : en te déconnectant, tu perdras l’accès à ta garde-robe. Sécurise-le d’abord avec ton e-mail.'
+                  : 'Ta garde-robe reste sauvegardée sur ton compte.', [
                   { text: 'Annuler', style: 'cancel' },
                   { text: 'Se déconnecter', onPress: () => { track('signed_out'); leave(); } },
                 ])} />

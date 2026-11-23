@@ -1,6 +1,6 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
-import { KeyboardAvoidingView, Platform, ScrollView, TextInput, View, type TextInputInstance } from 'react-native';
+import { Alert, KeyboardAvoidingView, Platform, ScrollView, TextInput, View, type TextInputInstance } from 'react-native';
 import Animated, { FadeInDown, FadeInRight, useAnimatedStyle, useSharedValue, withSequence, withTiming } from 'react-native-reanimated';
 import { AppText } from '@/components/AppText';
 import { PressableScale } from '@/components/PressableScale';
@@ -59,6 +59,7 @@ export default function ConnexionScreen() {
   const auth = useAuth();
   const store = useStore();
   const existing = mode === 'login';
+  const linking = mode === 'link'; // compte sans e-mail qu'on sécurise
 
   const [step, setStep] = useState<'email' | 'code'>('email');
   const [email, setEmail] = useState('');
@@ -75,7 +76,7 @@ export default function ConnexionScreen() {
 
   // Une fois connecté et les données rechargées : look du jour si le profil existe, sinon questionnaire.
   useEffect(() => {
-    if (!auth.userId || store.syncedUserId !== auth.userId) return;
+    if (linking || !auth.userId || store.syncedUserId !== auth.userId) return;
     track('auth_done', { existing: store.profile.onboarded });
     router.replace(store.profile.onboarded ? '/(tabs)' : '/onboarding/questionnaire');
   }, [auth.userId, store.syncedUserId, store.profile.onboarded, router]);
@@ -84,7 +85,7 @@ export default function ConnexionScreen() {
     if (!isValidEmail(email)) { setError('Cette adresse e-mail ne semble pas valide.'); return; }
     setBusy(true);
     setError(null);
-    const res = await auth.sendCode(email);
+    const res = linking ? await auth.linkEmail(email) : await auth.sendCode(email);
     setBusy(false);
     if (!res.ok) { setError(res.message); return; }
     track('auth_code_sent');
@@ -97,9 +98,13 @@ export default function ConnexionScreen() {
     if (value.length !== CODE_LENGTH || busy) return;
     setBusy(true);
     setError(null);
-    const res = await auth.verifyCode(email, value);
+    const res = linking ? await auth.verifyLinkCode(email, value) : await auth.verifyCode(email, value);
     setBusy(false);
-    if (!res.ok) setError(res.message);
+    if (!res.ok) { setError(res.message); return; }
+    if (linking) {
+      track('account_secured');
+      Alert.alert('Compte sécurisé', 'Ta garde-robe est maintenant liée à ton e-mail : tu la retrouveras sur n’importe quel téléphone.', [{ text: 'Parfait', onPress: () => router.back() }]);
+    }
     // Sinon : l'effet plus haut prend le relais dès que les données sont chargées.
   };
 
@@ -116,10 +121,11 @@ export default function ConnexionScreen() {
           {step === 'email' ? (
             <Animated.View key="email" entering={FadeInDown.duration(motion.base)} style={{ gap: 18 }}>
               <View style={{ gap: 10 }}>
-                <AppText variant="eyebrow" color={colors.primary}>{existing ? 'Content de te revoir' : 'Ton compte'}</AppText>
+                <AppText variant="eyebrow" color={colors.primary}>{existing ? 'Content de te revoir' : linking ? 'Sécuriser mon compte' : 'Ton compte'}</AppText>
                 <AppText style={{ fontFamily: fonts.display, fontSize: 32, lineHeight: 35, letterSpacing: -0.3 }}>
                   {existing ? 'Retrouve ta garde-robe.' : 'Ta garde-robe, à l’abri.'}
                 </AppText>
+                {linking ? <AppText muted style={{ fontSize: 16, lineHeight: 23 }}>Si tu changes de téléphone ou supprimes l’appli, ton e-mail te permettra de tout retrouver.</AppText> : null}
                 <AppText muted style={{ fontSize: 16, lineHeight: 23 }}>
                   On t’envoie un code par e-mail. Pas de mot de passe à retenir.
                 </AppText>
@@ -171,7 +177,7 @@ export default function ConnexionScreen() {
           {step === 'email' ? (
             <Button label="Recevoir mon code" loading={busy} disabled={!email.trim()} onPress={send} />
           ) : (
-            <Button label={connected ? 'Chargement de ton compte…' : 'Valider'} loading={busy || connected}
+            <Button label={connected && !linking ? 'Chargement de ton compte…' : 'Valider'} loading={busy || (connected && !linking)}
               disabled={code.length !== CODE_LENGTH} onPress={() => verify()} />
           )}
         </View>

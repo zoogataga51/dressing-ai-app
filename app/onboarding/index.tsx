@@ -1,5 +1,6 @@
 import { useRouter } from 'expo-router';
-import { View } from 'react-native';
+import { useState } from 'react';
+import { Alert, View } from 'react-native';
 import Animated, { FadeInDown, ZoomIn } from 'react-native-reanimated';
 import { AppText } from '@/components/AppText';
 import { PressableScale } from '@/components/PressableScale';
@@ -10,13 +11,23 @@ import { useTheme } from '@/theme/ThemeProvider';
 import { motion } from '@/theme/tokens';
 
 /**
- * Écran d'accueil : création de compte par e-mail (Apple et Google viendront avec les comptes
+ * Écran d'accueil : démarrage sans e-mail (compte anonyme), connexion par e-mail (Apple et Google viendront avec les comptes
  * développeur payants), connexion à un compte existant, ou découverte en mode démo.
  */
 export default function Welcome() {
   const { colors } = useTheme();
   const router = useRouter();
-  const { setDemo } = useAuth();
+  const { setDemo, startAnonymous } = useAuth();
+  const [busy, setBusy] = useState(false);
+  // Inscription en un geste : compte créé sans e-mail, l'e-mail se demande plus tard (Profil > Sécuriser mon compte).
+  const start = async () => {
+    setBusy(true);
+    const res = await startAnonymous();
+    setBusy(false);
+    if (!res.ok) { Alert.alert('Oups', res.message); return; }
+    track('auth_done', { anonymous: true });
+    router.replace('/onboarding/questionnaire');
+  };
   return (
     <Screen edges={['top', 'bottom']}>
       <View style={{ flex: 1, paddingHorizontal: 24, paddingBottom: 16, justifyContent: 'space-between' }}>
@@ -41,7 +52,7 @@ export default function Welcome() {
         </View>
 
         <Animated.View entering={FadeInDown.delay(300).duration(motion.slow)} style={{ gap: 10 }}>
-          <Button label="Créer mon profil de style" onPress={() => router.push('/onboarding/connexion')} />
+          <Button label="Créer mon profil de style" loading={busy} onPress={start} />
           <AppText variant="small" muted style={{ textAlign: 'center' }}>Environ 3 minutes · 7 jours d’essai gratuit</AppText>
           <View style={{ flexDirection: 'row', justifyContent: 'center', gap: 4, marginTop: 6 }}>
             <PressableScale onPress={() => router.push('/onboarding/connexion?mode=login')} style={{ paddingVertical: 8, paddingHorizontal: 6 }}>

@@ -113,3 +113,9 @@ couvertes. Testé sur la garde-robe de démo.
 docs/PASSATION.md : état complet, liste des blocages (domaine + e-mails, Gemini payant, comptes anonymes, choix de
 l'essai, mentions légales, jeton Expo, purge des comptes inactifs) et nouvelle liste « À faire ». Motif modifiable
 dans la fiche vêtement.
+
+## 2026-11-23 — [cloud] Décisions du fondateur + inscription sans e-mail
+Décisions : domaine dressingai.fr (libre, à acheter), inscription sans e-mail OUI, essai sans carte pour la bêta
+(on retranche au lancement avec les chiffres), facturation Gemini OUI. Comptes anonymes activés dans Supabase
+(accord du fondateur). Appli : « Créer mon profil » démarre sans e-mail ; « Sécuriser mon compte » (Profil +
+rappel sur l'écran du jour dès 5 pièces) lie un e-mail sans changer de compte. Testé en réel (création, profil, suppression).

@@ -68,13 +68,12 @@ Session 2 (2026-11-23), tout testé (tsc, export iOS, tests SQL, tests de bout e
 - Bêta : icône, eas.json, docs/BETA.md (fiches stores, confidentialité), supabase/sql/indicateurs.sql.
 
 ## Bloqué — décisions ou paiements du fondateur (voir le récap du 2026-11-23)
-1. Nom de domaine (~10 €/an) + Resend gratuit : sans serveur d'e-mail, Supabase n'envoie qu'un lien (pas de code),
+1. Nom de domaine dressingai.fr (choisi, libre le 2026-11-23, ~7 €/an) + Resend gratuit : sans serveur d'e-mail, Supabase n'envoie qu'un lien (pas de code),
    seulement aux membres de l'équipe, 2 par heure. Bloquant pour la bêta.
 2. Offre payante Gemini : obligatoire avant les photos de vrais testeurs (RGPD), lève les quotas (Flash-Lite
    15/min, Flash 20/jour), permet de générer les images des duels (~2 €) et de retester Flash.
-3. Proposition : comptes anonymes Supabase (démarrer sans e-mail). Le réglage a été refusé par le garde-fou de la
-   session : le fondateur doit l'activer lui-même (Authentication > Sign In / Providers > Anonymous) ou donner son accord.
-4. Choix de l'essai : sans carte (actuel, conforme au cahier des charges) ou avec carte via les stores (convertit mieux).
+3. (Fait le 2026-11-23) Inscription sans e-mail activée avec l'accord du fondateur.
+4. (Décidé) Essai sans carte pour la bêta ; on retranche au lancement avec les chiffres de conversion.
 5. Champs [entre crochets] de src/data/legal.ts (nom, adresse, médiateur de la consommation).
 6. Jeton Expo (compte moha.del51) en secret de l'environnement → builds EAS et mises à jour testables sans PC.
 7. Suppression automatique des comptes inactifs depuis 2 ans (promise dans la politique) : à programmer, avec accord.

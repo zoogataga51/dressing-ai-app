@@ -13,6 +13,7 @@ export type EventName =
   | 'app_open'
   | 'auth_code_sent'
   | 'auth_done'
+  | 'account_secured'
   | 'demo_started'
   | 'signed_out'
   | 'onboarding_question'
