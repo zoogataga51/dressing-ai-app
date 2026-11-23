@@ -24,7 +24,7 @@ function Toggle({ on }: { on: boolean }) {
   const knob = useAnimatedStyle(() => ({ transform: [{ translateX: withSpring(on ? 20 : 0, motion.spring) }] }), [on]);
   return (
     <Animated.View style={[{ width: 48, height: 28, borderRadius: 14, padding: 3 }, track]}>
-      <Animated.View style={[{ width: 22, height: 22, borderRadius: 11, backgroundColor: '#FFFFFF' }, knob]} />
+      <Animated.View style={[{ width: 22, height: 22, borderRadius: 11, backgroundColor: colors.surface }, knob]} />
     </Animated.View>
   );
 }
@@ -80,7 +80,7 @@ export default function ProfileScreen() {
 
         <Animated.View entering={FadeInDown.duration(motion.slow)} style={{ flexDirection: 'row', alignItems: 'center', gap: 14 }}>
           <View style={{ width: 64, height: 64, borderRadius: 32, backgroundColor: colors.primary, alignItems: 'center', justifyContent: 'center' }}>
-            <AppText style={{ fontFamily: 'Syne_800ExtraBold', fontSize: 26 }} color={colors.onPrimary}>{initial}</AppText>
+            <AppText style={{ fontFamily: fonts.display, fontSize: 28 }} color={colors.onPrimary}>{initial}</AppText>
           </View>
           <View style={{ gap: 4 }}>
             <AppText variant="heading" style={{ fontSize: 20 }}>{profile.firstName || 'Mon compte'}</AppText>

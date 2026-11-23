@@ -3,9 +3,9 @@ import { fonts } from '@/theme/tokens';
 import { useTheme } from '@/theme/ThemeProvider';
 
 export type TextVariant =
-  | 'hero' // gros titre d'écran (Syne 30)
-  | 'title' // titre de carte (Syne 26)
-  | 'heading' // sous-titre (Syne 18)
+  | 'hero' // gros titre d'écran (DM Serif Display 30)
+  | 'title' // titre de carte (DM Serif Display 26)
+  | 'heading' // sous-titre (DM Serif Display 18)
   | 'eyebrow' // petite ligne en capitales espacées
   | 'body'
   | 'bodyStrong'

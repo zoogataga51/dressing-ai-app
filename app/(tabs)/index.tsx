@@ -22,7 +22,7 @@ import { getTodayWeather } from '@/lib/weather';
 import { useStore } from '@/state/AppStore';
 import { useAuth } from '@/state/AuthStore';
 import { useTheme } from '@/theme/ThemeProvider';
-import { motion, space } from '@/theme/tokens';
+import { fonts, motion, space } from '@/theme/tokens';
 import { MOODS, type Garment, type Mood, type Outfit, type Weather } from '@/types';
 
 const SIDE = 20;
@@ -55,7 +55,7 @@ function OutfitCard({ outfit, pieces, index, total, width, scrollX, moodLabel }:
     <Animated.View style={[{ width, borderRadius: 28, backgroundColor: tint, padding: 16, paddingTop: 18, gap: 14,
       shadowColor: colors.shadow, shadowOpacity: 0.08, shadowRadius: 18, shadowOffset: { width: 0, height: 12 }, elevation: 3 }, anim]}>
       <View style={{ paddingRight: 100, gap: 4 }}>
-        <AppText variant="eyebrow" color={colors.primary} style={{ fontFamily: 'Syne_700Bold', letterSpacing: 1.7 }}>
+        <AppText variant="eyebrow" color={colors.primary} style={{ fontFamily: fonts.bodyBold, letterSpacing: 1.7 }}>
           Look 0{index + 1} / 0{total}
         </AppText>
         <AppText variant="title" color={readableOn(tint)}>{outfit.name}</AppText>
@@ -267,7 +267,7 @@ export default function TodayScreen() {
         {outfits[active]?.tip ? (
           <Animated.View key={outfits[active].id} entering={FadeInDown.duration(motion.base)}
             style={{ marginHorizontal: SIDE, flexDirection: 'row', gap: 12, padding: 14, borderRadius: 18, borderWidth: 1, borderColor: colors.surfaceBorder, backgroundColor: colors.surface }}>
-            <AppText style={{ fontFamily: 'Syne_800ExtraBold', fontSize: 40, lineHeight: 40, color: colors.accent }}>“</AppText>
+            <AppText style={{ fontFamily: fonts.display, fontSize: 46, lineHeight: 46, color: colors.accent }}>“</AppText>
             <View style={{ flex: 1, gap: 3 }}>
               <AppText variant="eyebrow">Le mot du styliste</AppText>
               <AppText variant="small">{outfits[active].tip}</AppText>

@@ -8,7 +8,7 @@ import { Button, Screen, Sticker } from '@/components/ui';
 import { track } from '@/lib/analytics';
 import { useAuth } from '@/state/AuthStore';
 import { useTheme } from '@/theme/ThemeProvider';
-import { motion } from '@/theme/tokens';
+import { fonts, motion } from '@/theme/tokens';
 
 /**
  * Écran d'accueil : démarrage sans e-mail (compte anonyme), connexion par e-mail (Apple et Google viendront avec les comptes
@@ -33,10 +33,10 @@ export default function Welcome() {
       <View style={{ flex: 1, paddingHorizontal: 24, paddingBottom: 16, justifyContent: 'space-between' }}>
         <View style={{ paddingTop: 40, gap: 18 }}>
           <Animated.View entering={FadeInDown.duration(motion.slow)}>
-            <AppText variant="eyebrow" color={colors.primary} style={{ fontFamily: 'Syne_700Bold', letterSpacing: 2 }}>Dressing AI</AppText>
+            <AppText variant="eyebrow" color={colors.primary} style={{ fontFamily: fonts.bodyBold, letterSpacing: 2 }}>Dressing AI</AppText>
           </Animated.View>
           <Animated.View entering={FadeInDown.delay(80).duration(motion.slow)}>
-            <AppText style={{ fontFamily: 'Syne_800ExtraBold', fontSize: 46, lineHeight: 48, letterSpacing: -0.8 }}>
+            <AppText style={{ fontFamily: fonts.display, fontSize: 46, lineHeight: 50, letterSpacing: -0.5 }}>
               Ton look du jour, pensé avec tes vêtements.
             </AppText>
           </Animated.View>

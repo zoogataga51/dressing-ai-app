@@ -1,18 +1,18 @@
 /**
- * Identité visuelle « le magazine du matin ».
+ * Identité visuelle « le magazine du matin » — palette « bleu nuit & kaki » (choix du fondateur, 2026-11-23).
  *
  * TOUT le style de l'appli part de ce fichier : changer une couleur ici la change partout.
  * Règle : aucun code couleur en dur dans les écrans, on passe toujours par `useTheme()`.
  */
 
 export const palette = {
-  cobalt: '#2B44C6', // couleur principale : boutons importants, éléments actifs
-  cobaltSoft: '#E9ECFB',
-  coral: '#FF5A3C', // accent : stickers, humeur, bouton Ajouter (texte encre dessus)
-  butter: '#F6D867', // petits badges, météo (texte encre dessus)
-  ink: '#15151C',
-  paper: '#F6F3EE',
-  paperRaised: '#FFFDF9',
+  night: '#1F2B4D', // bleu nuit : couleur principale (boutons importants, éléments actifs, en-tête Premium)
+  nightSoft: '#E3E6EF',
+  khaki: '#8C9C7E', // vert kaki : accent (stickers, humeur, bouton Premium ; texte encre dessus)
+  sand: '#F4DDAE', // sable : petits badges, météo (texte encre dessus)
+  ink: '#141A2B',
+  paper: '#F5F2EE',
+  paperRaised: '#FFFDFA',
   danger: '#B3261E',
   white: '#FFFFFF',
 } as const;
@@ -34,6 +34,9 @@ export type ThemeColors = {
   onHighlight: string;
   inverse: string;
   onInverse: string;
+  /** Couleur de marque, identique en mode clair et sombre (en-tête Premium). */
+  brand: string;
+  onBrand: string;
   chipBorder: string;
   track: string;
   danger: string;
@@ -43,52 +46,56 @@ export type ThemeColors = {
 export const lightColors: ThemeColors = {
   background: palette.paper,
   surface: palette.paperRaised,
-  surfaceBorder: '#ECE6DB',
-  divider: '#F0EBE2',
+  surfaceBorder: '#E6E2DA',
+  divider: '#EEEAE3',
   text: palette.ink,
-  textMuted: '#5F5B53',
-  textSubtle: '#9A9387',
-  primary: palette.cobalt,
-  primarySoft: palette.cobaltSoft,
+  textMuted: '#5D6170',
+  textSubtle: '#9497A3',
+  primary: palette.night,
+  primarySoft: palette.nightSoft,
   onPrimary: palette.white,
-  accent: palette.coral,
+  accent: palette.khaki,
   onAccent: palette.ink,
-  highlight: palette.butter,
+  highlight: palette.sand,
   onHighlight: palette.ink,
   inverse: palette.ink,
   onInverse: palette.paper,
-  chipBorder: '#DCD5C8',
-  track: '#D3CBBD',
+  brand: palette.night,
+  onBrand: palette.white,
+  chipBorder: '#D8D5CE',
+  track: '#CFCBC3',
   danger: palette.danger,
-  shadow: '#15151C',
+  shadow: palette.ink,
 };
 
 export const darkColors: ThemeColors = {
-  background: '#121218',
-  surface: '#1C1C24',
-  surfaceBorder: '#2A2A34',
-  divider: '#262630',
-  text: '#F3F0EA',
-  textMuted: '#ADA79C',
-  textSubtle: '#7D776D',
-  primary: '#6F84F0',
-  primarySoft: '#232A52',
-  onPrimary: '#0E1030',
-  accent: palette.coral,
-  onAccent: palette.ink,
-  highlight: palette.butter,
+  background: '#0F1320',
+  surface: '#171C2C',
+  surfaceBorder: '#252B3E',
+  divider: '#1F2536',
+  text: '#EEF0F6',
+  textMuted: '#A6ABBD',
+  textSubtle: '#737990',
+  primary: '#8FA3E0',
+  primarySoft: '#1E2742',
+  onPrimary: '#0F1320',
+  accent: '#A3B394',
+  onAccent: '#0F1320',
+  highlight: palette.sand,
   onHighlight: palette.ink,
-  inverse: palette.paper,
-  onInverse: palette.ink,
-  chipBorder: '#34343F',
-  track: '#3A3A44',
+  inverse: '#EEF0F6',
+  onInverse: '#0F1320',
+  brand: palette.night,
+  onBrand: palette.white,
+  chipBorder: '#2E3548',
+  track: '#343B50',
   danger: '#FF8A80',
   shadow: '#000000',
 };
 
 export const fonts = {
-  display: 'Syne_800ExtraBold',
-  displayBold: 'Syne_700Bold',
+  display: 'DMSerifDisplay_400Regular', // titres : serif élégante (une seule graisse)
+  displayBold: 'DMSerifDisplay_400Regular',
   body: 'Inter_400Regular',
   bodyMedium: 'Inter_500Medium',
   bodySemi: 'Inter_600SemiBold',

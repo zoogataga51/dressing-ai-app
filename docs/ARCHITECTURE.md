@@ -11,12 +11,13 @@
 ## Identité visuelle : « le magazine du matin »
 
 Tout est dans `src/theme/tokens.ts`. Aucun code couleur ne doit être écrit en dur dans
-un écran (sauf l'en-tête cobalt du paywall, volontairement fixe). Changer le design =
+un écran (l'en-tête du paywall utilise `brand`, identique en clair et en sombre). Changer le design =
 modifier ce fichier.
 
-- Fond papier `#F6F3EE`, encre `#15151C`
-- Cobalt `#2B44C6` (principal), corail `#FF5A3C` (accent), jaune beurre `#F6D867` (badges)
-- Syne pour les titres, Inter pour le texte
+- Fond papier `#F5F2EE`, encre `#141A2B`
+- Bleu nuit `#1F2B4D` (principal), vert kaki `#8C9C7E` (accent), sable `#F4DDAE` (badges)
+- DM Serif Display pour les titres, Inter pour le texte
+- Propositions comparées : docs/palettes-propositions.png et docs/palettes-A-vs-D.png
 - Stickers légèrement penchés = signature visuelle
 - Carte du look teintée par la couleur dominante des vêtements (`outfitTint`)
 - Animations courtes (160 à 420 ms) : le matin, personne ne veut attendre

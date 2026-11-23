@@ -101,7 +101,7 @@ export default function AddGarmentScreen() {
               </AppText>
               <AppText style={{ fontFamily: fonts.display, fontSize: 13 }} color={colors.onInverse}>{added}/{TARGET}</AppText>
             </View>
-            <ProgressBar value={added / TARGET} color={colors.highlight} track="#3A3A44" />
+            <ProgressBar value={added / TARGET} color={colors.highlight} track={colors.onInverse + "33"} />
           </View>
         ) : null}
 

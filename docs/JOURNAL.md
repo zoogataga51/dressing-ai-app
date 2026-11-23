@@ -199,3 +199,9 @@ Migration 0005 (profiles.last_push_on). L'appli enregistre son jeton Expo (avec 
 en doublon ; morning-looks envoie « Ton look du jour : … » à l'heure choisie. Testé avec un faux jeton (jeton
 oublié comme prévu). Test réel à faire par le fondateur sur iPhone (réactiver l'heure de notification dans le
 Profil pour enregistrer le jeton). Mise à jour 0.2.1 publiée.
+
+## 2026-11-23 — [cloud] Nouvelle identité : bleu nuit & kaki
+Le fondateur n'aimait ni les couleurs ni la police Syne. 4 propositions montrées (docs/palettes-*.png) ; choix :
+palette D (bleu nuit, sable, titres DM Serif Display) avec le kaki de la palette A à la place du saumon.
+Appliqué partout : tokens (clair + sombre, nouvelle couleur `brand`), écrans, icône et écran de démarrage, site
+(à redéposer sur OVH), e-mails de connexion. Syne retirée. Test d'affichage navigateur OK. Mise à jour 0.3 publiée.

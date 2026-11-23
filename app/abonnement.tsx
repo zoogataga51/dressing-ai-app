@@ -49,7 +49,7 @@ function PlanCard({ plan, price, selected, onPress }: { plan: (typeof PLANS)[num
         </View>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
           <AppText variant="bodyStrong">{price} {plan.unit}</AppText>
-          <Animated.View style={[{ width: 22, height: 22, borderRadius: 11, backgroundColor: '#FFFFFF' }, radio]} />
+          <Animated.View style={[{ width: 22, height: 22, borderRadius: 11, backgroundColor: colors.surface }, radio]} />
         </View>
       </Animated.View>
     </PressableScale>
@@ -107,32 +107,32 @@ export default function PaywallScreen() {
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.background }}>
-      <View style={{ backgroundColor: '#2B44C6', borderBottomLeftRadius: 32, borderBottomRightRadius: 32 }}>
+      <View style={{ backgroundColor: colors.brand, borderBottomLeftRadius: 32, borderBottomRightRadius: 32 }}>
         <SafeAreaView edges={['top']} style={{ paddingHorizontal: 20, paddingBottom: 28, gap: 16 }}>
           <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingTop: 8 }}>
-            <AppText style={{ fontFamily: fonts.display, fontSize: 14, letterSpacing: 2 }} color="#FFFFFF">DRESSING AI · PREMIUM</AppText>
+            <AppText style={{ fontFamily: fonts.display, fontSize: 14, letterSpacing: 2 }} color={colors.onBrand}>DRESSING AI · PREMIUM</AppText>
             <PressableScale accessibilityRole="button" accessibilityLabel="Fermer" onPress={() => router.back()}
-              style={{ width: 44, height: 44, borderRadius: 22, backgroundColor: 'rgba(255,255,255,0.16)', alignItems: 'center', justifyContent: 'center' }}>
-              <Icon name="close" size={18} color="#FFFFFF" strokeWidth={2} />
+              style={{ width: 44, height: 44, borderRadius: 22, backgroundColor: colors.onBrand + '29', alignItems: 'center', justifyContent: 'center' }}>
+              <Icon name="close" size={18} color={colors.onBrand} strokeWidth={2} />
             </PressableScale>
           </View>
           <Animated.View entering={FadeInDown.duration(motion.slow)}>
-            <AppText style={{ fontFamily: fonts.display, fontSize: 34, lineHeight: 36 }} color="#FFFFFF">Ton styliste perso, chaque matin.</AppText>
+            <AppText style={{ fontFamily: fonts.display, fontSize: 34, lineHeight: 36 }} color={colors.onBrand}>Ton styliste perso, chaque matin.</AppText>
           </Animated.View>
           <View style={{ gap: 10 }}>
             {PERKS.map((p, k) => (
               <Animated.View key={p} entering={FadeInDown.delay(100 + k * 60).duration(motion.slow)} style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-                <View style={{ width: 24, height: 24, borderRadius: 12, backgroundColor: '#F6D867', alignItems: 'center', justifyContent: 'center' }}>
-                  <Icon name="check" size={13} color="#15151C" strokeWidth={2.8} />
+                <View style={{ width: 24, height: 24, borderRadius: 12, backgroundColor: colors.highlight, alignItems: 'center', justifyContent: 'center' }}>
+                  <Icon name="check" size={13} color={colors.onHighlight} strokeWidth={2.8} />
                 </View>
-                <AppText color="#FFFFFF" style={{ fontFamily: fonts.bodyMedium }}>{p}</AppText>
+                <AppText color={colors.onBrand} style={{ fontFamily: fonts.bodyMedium }}>{p}</AppText>
               </Animated.View>
             ))}
           </View>
         </SafeAreaView>
         <Animated.View entering={ZoomIn.delay(250).springify()} style={{ position: 'absolute', right: 18, bottom: -16 }}>
-          <View style={{ backgroundColor: '#FF5A3C', borderRadius: 14, paddingHorizontal: 14, paddingVertical: 9, transform: [{ rotate: '-5deg' }] }}>
-            <AppText style={{ fontFamily: fonts.display, fontSize: 14 }} color="#15151C">
+          <View style={{ backgroundColor: colors.accent, borderRadius: 14, paddingHorizontal: 14, paddingVertical: 9, transform: [{ rotate: '-5deg' }] }}>
+            <AppText style={{ fontFamily: fonts.bodyBold, fontSize: 14 }} color={colors.onAccent}>
               {access.state === 'premium' ? 'Premium' : access.state === 'trial' ? `${access.daysLeft} ${access.daysLeft > 1 ? 'jours' : 'jour'} d’essai` : 'Essai terminé'}
             </AppText>
           </View>

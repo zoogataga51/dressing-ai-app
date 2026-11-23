@@ -6,7 +6,7 @@ import { PressableScale } from '@/components/PressableScale';
 import { Screen } from '@/components/ui';
 import { useStore } from '@/state/AppStore';
 import { useTheme } from '@/theme/ThemeProvider';
-import { motion, space } from '@/theme/tokens';
+import { fonts, motion, space } from '@/theme/tokens';
 import { MOODS } from '@/types';
 
 export default function HistoryScreen() {
@@ -51,14 +51,14 @@ export default function HistoryScreen() {
                 <PressableScale pressedScale={0.98} accessibilityRole="button" onPress={() => router.push(`/look/${h.date}`)}
                   style={{ flexDirection: 'row', alignItems: 'center', gap: 12, padding: 12, borderRadius: 20, borderWidth: 1, borderColor: colors.surfaceBorder, backgroundColor: colors.surface }}>
                   <View style={{ width: 44, alignItems: 'center' }}>
-                    <AppText style={{ fontFamily: 'Syne_800ExtraBold', fontSize: 24, lineHeight: 26 }}>{d.getDate()}</AppText>
+                    <AppText style={{ fontFamily: fonts.display, fontSize: 26, lineHeight: 28 }}>{d.getDate()}</AppText>
                     <AppText variant="tiny" muted style={{ letterSpacing: 1 }}>{day}</AppText>
                   </View>
                   <View style={{ width: 64, flexDirection: 'row', flexWrap: 'wrap', gap: 4 }}>
                     {swatches.map((c, i) => <View key={i} style={{ width: 30, height: 30, borderRadius: 8, backgroundColor: c }} />)}
                   </View>
                   <View style={{ flex: 1, gap: 3 }}>
-                    <AppText style={{ fontFamily: 'Syne_700Bold', fontSize: 17 }}>{h.outfit.name}</AppText>
+                    <AppText style={{ fontFamily: fonts.display, fontSize: 19 }}>{h.outfit.name}</AppText>
                     <AppText variant="small" muted style={{ fontSize: 12 }}>{h.tempC}° · {h.mood === 'free' ? 'IA libre' : `humeur ${mood}`}</AppText>
                   </View>
                 </PressableScale>

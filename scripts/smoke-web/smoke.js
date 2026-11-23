@@ -15,7 +15,7 @@ const { chromium } = require('playwright');
   const click = async (t) => { await page.getByText(t, { exact: false }).last().click(); await page.waitForTimeout(900); };
   await page.goto('http://localhost:8099', { waitUntil: 'networkidle', timeout: 120000 });
   await page.waitForTimeout(3000); await shot('1_accueil');
-  await click('Créer mon profil de style'); await shot('2_connexion');
+  await click('J’ai déjà un compte'); await shot('2_connexion');
   await page.goBack(); await page.waitForTimeout(800);
   await click('Mode démo'); await page.waitForTimeout(1500); await shot('3_questionnaire');
   // Prénom

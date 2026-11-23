@@ -2,15 +2,16 @@
 python3 scripts/brand/make-icons.py  (Pillow requis)"""
 from PIL import Image, ImageDraw, ImageFont, ImageFilter
 
-COBALT, PAPER, CORAL, INK, BUTTER = '#2B44C6', '#F6F3EE', '#FF5A3C', '#15151C', '#F6D867'
-SYNE = 'node_modules/@expo-google-fonts/syne/800ExtraBold/Syne_800ExtraBold.ttf'
+NIGHT, PAPER, KHAKI, INK, SAND = '#1F2B4D', '#F5F2EE', '#8C9C7E', '#141A2B', '#F4DDAE'
+SERIF = 'node_modules/@expo-google-fonts/dm-serif-display/400Regular/DMSerifDisplay_400Regular.ttf'
+SANS = 'node_modules/@expo-google-fonts/inter/700Bold/Inter_700Bold.ttf'
 
 def mark(size, bg=None, letter=PAPER, mono=False, scale=1.0):
-    """Le « D » en Syne avec son sticker « AI » penché (signature des stickers de l'appli)."""
+    """Le « D » en DM Serif Display avec son sticker « AI » penché (signature des stickers de l'appli)."""
     S = size * 4  # dessin en grand puis réduction = bords nets
     img = Image.new('RGBA', (S, S), bg or (0, 0, 0, 0))
     d = ImageDraw.Draw(img)
-    font = ImageFont.truetype(SYNE, int(S * 0.46 * scale))
+    font = ImageFont.truetype(SERIF, int(S * 0.66 * scale))
     box = d.textbbox((0, 0), 'D', font=font)
     w, h = box[2] - box[0], box[3] - box[1]
     x, y = (S - w) / 2 - box[0] - S * 0.05 * scale, (S - h) / 2 - box[1] - S * 0.02 * scale
@@ -19,8 +20,8 @@ def mark(size, bg=None, letter=PAPER, mono=False, scale=1.0):
     sw, sh = int(S * 0.27 * scale), int(S * 0.15 * scale)
     st = Image.new('RGBA', (sw, sh), (0, 0, 0, 0))
     sd = ImageDraw.Draw(st)
-    sd.rounded_rectangle((0, 0, sw - 1, sh - 1), radius=int(sh * 0.28), fill='white' if mono else CORAL)
-    f2 = ImageFont.truetype(SYNE, int(sh * 0.62))
+    sd.rounded_rectangle((0, 0, sw - 1, sh - 1), radius=int(sh * 0.28), fill='white' if mono else KHAKI)
+    f2 = ImageFont.truetype(SANS, int(sh * 0.56))
     b2 = sd.textbbox((0, 0), 'AI', font=f2)
     sd.text(((sw - (b2[2] - b2[0])) / 2 - b2[0], (sh - (b2[3] - b2[1])) / 2 - b2[1]), 'AI', font=f2,
             fill=(0, 0, 0, 0) if mono else INK)
@@ -33,10 +34,10 @@ def mark(size, bg=None, letter=PAPER, mono=False, scale=1.0):
     img.alpha_composite(st, (int(x + w * 0.60), int(y + h * 0.78)))
     return img.resize((size, size), Image.LANCZOS)
 
-mark(1024, bg=COBALT).convert('RGB').save('assets/icon.png')                 # iOS : pas de transparence
-mark(1024, letter=COBALT, scale=0.9).save('assets/splash-icon.png')           # sur fond papier
+mark(1024, bg=NIGHT).convert('RGB').save('assets/icon.png')                 # iOS : pas de transparence
+mark(1024, letter=NIGHT, scale=0.9).save('assets/splash-icon.png')           # sur fond papier
 mark(512, scale=0.62).save('assets/android-icon-foreground.png')              # zone sûre ~66 %
-Image.new('RGB', (512, 512), COBALT).save('assets/android-icon-background.png')
+Image.new('RGB', (512, 512), NIGHT).save('assets/android-icon-background.png')
 mark(512, mono=True, scale=0.62).save('assets/android-icon-monochrome.png')
-mark(48, bg=COBALT).save('assets/favicon.png')
+mark(48, bg=NIGHT).save('assets/favicon.png')
 print('Icônes générées dans assets/')

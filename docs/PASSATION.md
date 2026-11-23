@@ -17,8 +17,10 @@ puis les dernières entrées de `docs/JOURNAL.md`.
   maquettes https://claude.ai/artifact/H8si7cDLcVxrX9ynnXUt3s
 
 ## Décisions validées
-- Identité « magazine du matin » : fond papier #F6F3EE, cobalt #2B44C6, corail #FF5A3C, jaune beurre #F6D867,
-  Syne (titres) + Inter (texte), stickers penchés, cartes teintées par les vêtements, mode sombre.
+- Identité « magazine du matin », palette choisie par le fondateur le 2026-11-23 : fond papier #F5F2EE, bleu nuit
+  #1F2B4D (principal), vert kaki #8C9C7E (accent), sable #F4DDAE (badges), encre #141A2B ; titres en DM Serif
+  Display + texte en Inter ; stickers penchés, cartes teintées par les vêtements, mode sombre bleu nuit.
+  (Ancienne identité cobalt/corail/Syne abandonnée : le fondateur n'aimait pas les couleurs ni la police large.)
 - Animations partout mais courtes ; jamais de barre de défilement visible.
 - Inscription : questionnaire (src/data/questionnaire.ts) puis 10 duels de looks (src/data/duels.ts) qui déduisent
   le style ; pas de note sur 10. L'inscription sera raccourcie après la bêta selon les abandons mesurés.
