@@ -1,6 +1,6 @@
 # Passation — à lire en premier par toute nouvelle session de Claude
 
-Dernière mise à jour : 2026-11-23 (session cloud d'origine). Lire ensuite `CLAUDE.md`, `docs/ARCHITECTURE.md`,
+Dernière mise à jour : 2026-11-23 (2e session cloud : étapes 1 à 9 faites sauf blocages listés plus bas). Lire ensuite `CLAUDE.md`, `docs/ARCHITECTURE.md`,
 puis les dernières entrées de `docs/JOURNAL.md`.
 
 ## Le projet et la relation avec le fondateur
@@ -55,17 +55,33 @@ puis les dernières entrées de `docs/JOURNAL.md`.
 - (Traité le 2026-11-23) Questionnaire adapté au rayon.
 
 ## Fait
-Interface complète (onglets, inscription, ajout photo, fiche vêtement, historique, profil, abonnement), thème,
-notifications locales, météo Open-Meteo, moteur de looks par règles, schéma Supabase + RLS, fonction serveur
-generate-outfits (prompt prêt, appel au modèle à brancher), journal partagé. Testé sur iPhone : tout fonctionne.
+Interface complète, thème, notifications locales, météo, schéma Supabase + RLS, journal partagé (session 1).
+Session 2 (2026-11-23), tout testé (tsc, export iOS, tests SQL, tests de bout en bout, test navigateur) :
+- Questionnaire et duels adaptés au rayon. Connexion e-mail (code 6 chiffres ou lien), mode démo, déconnexion,
+  suppression du compte (fonction delete-account), export des données.
+- Synchronisation complète avec Supabase (file d'attente hors ligne, src/lib/sync.ts). Migrations 0002 à 0004 exécutées.
+- IA branchée : analyze-garment (photos) et generate-outfits (looks), Gemini 3.5 Flash-Lite + seconde chance,
+  contrôle qualité serveur, « Pas pour moi », looks préparés avant le réveil (morning-looks + pg_cron).
+  Banc d'essai scripts/looks-lab (16 profils), test e2e scripts/e2e/run.sh. Coût ≈ 0,05 €/utilisateur/mois.
+- Abonnement : essai de 7 jours protégé côté serveur, écran « Essai terminé », RevenueCat prêt (inactif sans clés),
+  webhook revenuecat-webhook. CGU + confidentialité (src/data/legal.ts, docs/legal/).
+- Bêta : icône, eas.json, docs/BETA.md (fiches stores, confidentialité), supabase/sql/indicateurs.sql.
+
+## Bloqué — décisions ou paiements du fondateur (voir le récap du 2026-11-23)
+1. Nom de domaine (~10 €/an) + Resend gratuit : sans serveur d'e-mail, Supabase n'envoie qu'un lien (pas de code),
+   seulement aux membres de l'équipe, 2 par heure. Bloquant pour la bêta.
+2. Offre payante Gemini : obligatoire avant les photos de vrais testeurs (RGPD), lève les quotas (Flash-Lite
+   15/min, Flash 20/jour), permet de générer les images des duels (~2 €) et de retester Flash.
+3. Proposition : comptes anonymes Supabase (démarrer sans e-mail). Le réglage a été refusé par le garde-fou de la
+   session : le fondateur doit l'activer lui-même (Authentication > Sign In / Providers > Anonymous) ou donner son accord.
+4. Choix de l'essai : sans carte (actuel, conforme au cahier des charges) ou avec carte via les stores (convertit mieux).
+5. Champs [entre crochets] de src/data/legal.ts (nom, adresse, médiateur de la consommation).
+6. Jeton Expo (compte moha.del51) en secret de l'environnement → builds EAS et mises à jour testables sans PC.
+7. Suppression automatique des comptes inactifs depuis 2 ans (promise dans la politique) : à programmer, avec accord.
 
 ## À faire (dans l'ordre)
-1. Questionnaire et duels adaptés au rayon (Homme : pas de robes, talons, ballerines, voile ; « Les deux » : tout).
-2. Connexion Supabase Auth (e-mail à code en priorité ; Apple et Google quand les comptes payants existeront).
-3. Synchronisation AppStore ↔ Supabase (profil, réponses, duels, vêtements, historique, photos dans le bucket).
-   Garde-robe vide pour un vrai compte ; données de démo seulement hors connexion.
-4. Fonctions serveur analyze-garment (vision) et generate-outfits branchées sur Gemini, avec repli sur les règles.
-   Détourage des photos : choisir une solution (coût !).
-5. Tests qualité/coût des looks, objectif < 0,50 € par utilisateur et par mois.
-6. Images des duels générées. 7. RevenueCat + paywall réel. 8. Politique de confidentialité / CGU (RGPD).
-9. Préparation bêta (TestFlight, test interne Google), puis stores.
+1. Débloquer les points ci-dessus, puis : modèles d'e-mail avec {{ .Token }}, images des duels, RevenueCat.
+2. Détourage sur le téléphone (module natif iOS Vision / Android ML Kit) dans un build de développement.
+3. Notification du matin avec le nom du look préparé (push Expo, nécessite le projet EAS).
+4. Bêta (TestFlight, test fermé Google 12 testeurs × 14 jours), mesure avec supabase/sql/indicateurs.sql.
+5. Raccourcir l'inscription selon les abandons mesurés ; stores ; acquisition.

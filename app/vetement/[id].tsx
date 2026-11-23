@@ -5,7 +5,7 @@ import { AppText } from '@/components/AppText';
 import { ChipRow } from '@/components/ChipRow';
 import { GarmentTile } from '@/components/GarmentTile';
 import { Button, Chip, IconButton, Screen, Sticker } from '@/components/ui';
-import { CATEGORY_OPTIONS, COLOR_OPTIONS, FIT_OPTIONS, SEASON_OPTIONS } from '@/data/garmentOptions';
+import { CATEGORY_OPTIONS, COLOR_OPTIONS, FIT_OPTIONS, PATTERN_OPTIONS, SEASON_OPTIONS } from '@/data/garmentOptions';
 import { track } from '@/lib/analytics';
 import { useStore } from '@/state/AppStore';
 import { useTheme } from '@/theme/ThemeProvider';
@@ -83,6 +83,9 @@ export default function GarmentScreen() {
           </ChipRow>
           <ChipRow label="Coupe">
             {FIT_OPTIONS.map((f) => <Chip key={f.id} label={f.label} selected={g.fit === f.id} onPress={() => set({ fit: f.id })} />)}
+          </ChipRow>
+          <ChipRow label="Motif">
+            {PATTERN_OPTIONS.map((p) => <Chip key={p} label={p} selected={(g.pattern ?? 'Uni') === p} onPress={() => set({ pattern: p })} />)}
           </ChipRow>
           <ChipRow label="Saisons">
             {SEASON_OPTIONS.map((s) => (

@@ -108,3 +108,8 @@ d'exemple. Script : scripts/smoke-web/smoke.js.
 Moteur par règles (démo, hors ligne, IA en panne) aligné sur l'IA : cohérence de formalité entre les pièces,
 humeur respectée (pas de cargo un jour chic), voile dans chaque tenue pour qui le porte, pas de short si jambes
 couvertes. Testé sur la garde-robe de démo.
+
+## 2026-11-23 — [cloud] Passation mise à jour
+docs/PASSATION.md : état complet, liste des blocages (domaine + e-mails, Gemini payant, comptes anonymes, choix de
+l'essai, mentions légales, jeton Expo, purge des comptes inactifs) et nouvelle liste « À faire ». Motif modifiable
+dans la fiche vêtement.
