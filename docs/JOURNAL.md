@@ -35,3 +35,7 @@ utilisable même si le téléphone n'est pas sur le même Wi-Fi que le PC. Test 
 Projet `dressing-ai` (org « Dressing AI », compte dressing.ai.app@outlook.com, région Europe). URL et clé publishable
 ajoutées dans src/lib/supabase.ts. Vue wear_history passée en security_invoker (sinon elle contournait la RLS).
 Prochaine étape : exécuter supabase/migrations/0001_init.sql dans le SQL Editor.
+
+## 2026-11-23 01:43 — [cloud] Base Supabase créée
+Le fondateur a exécuté supabase/migrations/0001_init.sql dans le SQL Editor : « Success. No rows returned ».
+Tables, RLS et bucket `garments` en place. Ne pas relancer ce fichier (les futures migrations iront dans 0002_…).
