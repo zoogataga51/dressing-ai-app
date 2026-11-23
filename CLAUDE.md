@@ -1,5 +1,7 @@
 # Consignes pour Claude (développement de Dressing AI)
 
+**Toute nouvelle session : lire d'abord `docs/PASSATION.md`.**
+
 - Langue : tout le texte visible par l'utilisateur est en français, tutoiement, ton chaleureux et chic.
 - Le fondateur ne code pas : expliquer les choix en langage simple, sans jargon.
 - Design : passer TOUJOURS par `useTheme()` et `src/theme/tokens.ts`, jamais de couleur en dur.

@@ -39,3 +39,7 @@ Prochaine étape : exécuter supabase/migrations/0001_init.sql dans le SQL Edito
 ## 2026-11-23 01:43 — [cloud] Base Supabase créée
 Le fondateur a exécuté supabase/migrations/0001_init.sql dans le SQL Editor : « Success. No rows returned ».
 Tables, RLS et bucket `garments` en place. Ne pas relancer ce fichier (les futures migrations iront dans 0002_…).
+
+## 2026-11-23 02:55 — [cloud] Passation écrite
+docs/PASSATION.md créé : contexte, décisions, comptes, état et ordre de travail. Le fondateur crée un environnement
+cloud avec accès Internet (Supabase, Gemini, Expo) pour que Claude travaille sans relais par le PC.
