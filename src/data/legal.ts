@@ -57,7 +57,7 @@ export const PRIVACY: LegalDoc = {
     ] },
     { title: 'Combien de temps', body: [
       '- Tant que ton compte existe. Si tu le supprimes, tout est effacé immédiatement : profil, vêtements, photos, historique.',
-      '- Compte inactif pendant 2 ans : il est supprimé, après un e-mail de prévenance.',
+      '- Compte inactif pendant 2 ans : il est supprimé. Si tu as indiqué un e-mail, on te prévient 30 jours avant (il suffit d’ouvrir l’appli pour le garder).',
       '- Les statistiques d’usage sont anonymisées à la suppression du compte.',
     ] },
     { title: 'Tes droits', body: [

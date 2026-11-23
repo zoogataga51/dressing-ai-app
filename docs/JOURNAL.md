@@ -205,3 +205,12 @@ Le fondateur n'aimait ni les couleurs ni la police Syne. 4 propositions montrée
 palette D (bleu nuit, sable, titres DM Serif Display) avec le kaki de la palette A à la place du saumon.
 Appliqué partout : tokens (clair + sombre, nouvelle couleur `brand`), écrans, icône et écran de démarrage, site
 (à redéposer sur OVH), e-mails de connexion. Syne retirée. Test d'affichage navigateur OK. Mise à jour 0.3 publiée.
+
+## 2026-11-23 — [cloud] Suppression automatique des comptes inactifs (accord du fondateur)
+Migration 0006 (profiles.inactivity_warned_at + fonction last_activity_per_user réservée au serveur), 0007 (pg_cron
+chaque nuit 3 h 17). Fonction purge-inactive : avertissement par e-mail à 23 mois, suppression 30 jours après ;
+comptes sans e-mail supprimés à 24 mois ; retour dans l'appli = avertissement effacé. Testé avec 4 faux comptes
+(tous les cas OK, nettoyés). delete-account partage le même code (_shared/accounts.ts). Reste : secret
+RESEND_API_KEY (clé Resend « Sending access ») dans Supabase > Edge Functions > Secrets — sans elle, aucun compte
+avec e-mail n'est supprimé (création automatique refusée par le garde-fou de la session ; premiers cas en 2028).
+Politique de confidentialité précisée (site à redéposer).
