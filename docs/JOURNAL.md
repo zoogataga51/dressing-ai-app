@@ -164,3 +164,8 @@ le moteur de secours : surveiller la conso (events ai_call). Prochaines étapes 
 6-III-2), pas publiée (décision : la publier ou prendre une domiciliation au moment de vendre ; Apple affiche
 l'adresse des vendeurs sur l'App Store). Hébergeurs : OVH (site) et Supabase (données). Contact :
 dressing.ai.app@outlook.com tant que contact@dressingai.fr (Zimbra) n'est pas créée. Mise à jour 0.1.3 publiée.
+
+## 2026-11-23 — [cloud] Site public prêt + adresse : décision
+Décision du fondateur : son adresse personnelle sera publiée au moment de la vente (pas de domiciliation). Site
+dressingai.fr généré depuis les textes de l'appli (scripts/build-site.ts → site/ : index, cgu, confidentialite),
+à déposer par le fondateur dans « www » de l'hébergement OVH gratuit (le domaine répond déjà en HTTPS).
