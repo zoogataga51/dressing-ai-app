@@ -177,3 +177,8 @@ partout (appli, CGU/confidentialité, site). Mise à jour 0.1.4 publiée. Site r
 ## 2026-11-23 — [cloud] contact@dressingai.fr reçoit
 Test du fondateur depuis sa boîte perso : reçu. L'e-mail envoyé via Resend est en « delivery_delayed » (OVH fait
 patienter les nouveaux expéditeurs / boîte en cours d'activation), Resend réessaie. Feu vert pour mettre le site en ligne.
+
+## 2026-11-23 — [cloud] Site public en ligne
+dressingai.fr, /cgu.html et /confidentialite.html en ligne (déposés par le fondateur avec FileZilla en SFTP ; l'Explorateur
+FTP web d'OVH n'existe plus ; le « index.html » d'OVH était un lien symbolique à supprimer). Vérifié : HTTP 200,
+contact@dressingai.fr présent. Toutes les étapes gratuites sont faites ; restent Apple (99 $) et Google (25 $) pour la bêta.

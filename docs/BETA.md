@@ -78,10 +78,10 @@ Test intermédiaire sans PC : `npx eas-cli update --channel preview`, puis QR co
   >
   > Essai gratuit de 7 jours, sans carte bancaire. Ensuite, Premium : 6,99 € par mois ou 39,99 € par an.
   > Abonnement renouvelé automatiquement, annulable à tout moment dans les réglages de ton compte Apple.
-  > Conditions : [URL]/cgu — Confidentialité : [URL]/confidentialite
+  > Conditions : https://dressingai.fr/cgu.html — Confidentialité : https://dressingai.fr/confidentialite.html
 
 - **Catégorie** : Style de vie (secondaire : Shopping)
-- **Âge** : 4+ (pas de contenu sensible). **URL d'assistance** : [URL] ou mailto.
+- **Âge** : 4+ (pas de contenu sensible). **URL d'assistance** : https://dressingai.fr (contact@dressingai.fr). **URL de confidentialité** : https://dressingai.fr/confidentialite.html
 - **Captures** (6,7" et 6,5") : 1. Look du jour (carte teintée) · 2. Choix de l'humeur · 3. Ajout photo avec
   reconnaissance · 4. Garde-robe par catégories · 5. Duels de looks · 6. Historique. Titre en Syne sur fond papier.
 
@@ -100,9 +100,11 @@ Données chiffrées en transit : oui. Suppression possible par l'utilisateur : o
 
 ## 7. Avant de soumettre
 
-- [ ] Compléter les champs [entre crochets] de `src/data/legal.ts` (nom, adresse, médiateur), puis
-      `node --experimental-strip-types scripts/export-legal.ts` et mettre les pages en ligne.
-- [ ] SMTP branché, modèles d'e-mail avec `{{ .Token }}` (voir ARCHITECTURE.md).
-- [ ] Gemini en offre payante.
+- [x] Site en ligne (https://dressingai.fr, /cgu.html, /confidentialite.html). Mise à jour : modifier src/data/legal.ts,
+      `node --experimental-strip-types scripts/build-site.ts`, puis déposer site/*.html dans « www » (FileZilla, SFTP
+      ftp.cluster129.hosting.ovh.net, utilisateur dressir, mot de passe connu du fondateur seul).
+- [ ] À la vente : adresse personnelle du fondateur (décidé), SIRET, médiateur dans src/data/legal.ts.
+- [x] SMTP Resend branché, e-mails français avec code (supabase/email/templates.json).
+- [x] Gemini en offre payante (prépaiement 5 €, sans recharge automatique).
 - [ ] Compte de démonstration pour la relecture Apple (e-mail + accès au code) ou mode démo mis en avant.
 - [ ] Détourage sur le téléphone (module natif) testé dans un build de développement.
