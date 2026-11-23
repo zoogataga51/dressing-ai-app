@@ -2,14 +2,17 @@
  * Textes juridiques affichés dans l'appli (Profil, paywall) et exportés en Markdown pour le site
  * (scripts/export-legal.ts → docs/legal/). Rédigés pour la France (RGPD, Code de la consommation).
  *
- * ⚠️ À COMPLÉTER AVANT LA PUBLICATION : les champs entre crochets [ … ] (identité de l'éditeur, adresse,
- * SIRET une fois la micro-entreprise créée, médiateur de la consommation). À faire relire si possible.
+ * Version bêta (non commerciale) : éditeur non professionnel, adresse communiquée à l'hébergeur seulement
+ * (art. 6-III-2 de la loi pour la confiance dans l'économie numérique).
+ * ⚠️ AVANT LA VENTE : ajouter l'adresse (ou une domiciliation), le SIRET de la micro-entreprise et le médiateur de
+ * la consommation ; repasser l'éditeur en professionnel. À faire relire si possible.
  */
 
 export type LegalDoc = { id: 'cgu' | 'confidentialite'; title: string; updated: string; sections: { title: string; body: string[] }[] };
 
-const EDITOR = '[Prénom Nom du fondateur], [adresse postale]';
-const CONTACT = 'dressing.ai.app@outlook.com';
+const EDITOR = 'Muhammed Delikaya (éditeur non professionnel ; coordonnées communiquées à l’hébergeur)';
+const HOST = 'OVH SAS, 2 rue Kellermann, 59100 Roubaix (site dressingai.fr) ; Supabase Inc., serveurs situés dans l’Union européenne (données de l’appli)';
+const CONTACT = 'dressing.ai.app@outlook.com'; // passer à contact@dressingai.fr quand la boîte Zimbra sera créée
 
 export const PRIVACY: LegalDoc = {
   id: 'confidentialite',
@@ -81,8 +84,9 @@ export const TERMS: LegalDoc = {
   updated: '23 novembre 2026',
   sections: [
     { title: 'Éditeur', body: [
-      `Dressing AI est édité par ${EDITOR} [, micro-entreprise, SIRET …]. Contact : ${CONTACT}.`,
-      'Hébergement : Supabase Inc., serveurs situés dans l’Union européenne.',
+      `Dressing AI est édité par ${EDITOR}. Contact : ${CONTACT}.`,
+      `Hébergement : ${HOST}.`,
+      'Pendant la bêta, l’appli est gratuite et proposée à titre non commercial.',
     ] },
     { title: 'Le service', body: [
       'Dressing AI propose chaque jour des tenues composées avec les vêtements que tu as ajoutés, en tenant compte de la météo, de ton humeur et de ton style. Les tenues sont des suggestions générées en partie par une intelligence artificielle : elles peuvent parfois être imparfaites.',
@@ -113,7 +117,7 @@ export const TERMS: LegalDoc = {
       'Ces conditions peuvent évoluer. En cas de changement important, tu en es informé·e dans l’appli au moins 30 jours avant ; tu peux alors résilier sans frais.',
     ] },
     { title: 'Litiges', body: [
-      `Ces conditions sont soumises au droit français. En cas de souci, écris-nous d’abord à ${CONTACT} : on cherchera une solution ensemble. Tu peux aussi recourir gratuitement au médiateur de la consommation : [nom et site du médiateur]. À défaut d’accord, les tribunaux compétents sont ceux prévus par la loi.`,
+      `Ces conditions sont soumises au droit français. En cas de souci, écris-nous d’abord à ${CONTACT} : on cherchera une solution ensemble. Dès l’ouverture des abonnements payants, tu pourras aussi recourir gratuitement à un médiateur de la consommation, dont les coordonnées figureront ici. À défaut d’accord, les tribunaux compétents sont ceux prévus par la loi.`,
     ] },
   ],
 };

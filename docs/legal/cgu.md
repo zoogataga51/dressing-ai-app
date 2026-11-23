@@ -4,9 +4,11 @@ _Mise à jour : 23 novembre 2026_
 
 ## Éditeur
 
-Dressing AI est édité par [Prénom Nom du fondateur], [adresse postale] [, micro-entreprise, SIRET …]. Contact : dressing.ai.app@outlook.com.
+Dressing AI est édité par Muhammed Delikaya (éditeur non professionnel ; coordonnées communiquées à l’hébergeur). Contact : dressing.ai.app@outlook.com.
 
-Hébergement : Supabase Inc., serveurs situés dans l’Union européenne.
+Hébergement : OVH SAS, 2 rue Kellermann, 59100 Roubaix (site dressingai.fr) ; Supabase Inc., serveurs situés dans l’Union européenne (données de l’appli).
+
+Pendant la bêta, l’appli est gratuite et proposée à titre non commercial.
 
 ## Le service
 
@@ -45,4 +47,4 @@ Ces conditions peuvent évoluer. En cas de changement important, tu en es inform
 
 ## Litiges
 
-Ces conditions sont soumises au droit français. En cas de souci, écris-nous d’abord à dressing.ai.app@outlook.com : on cherchera une solution ensemble. Tu peux aussi recourir gratuitement au médiateur de la consommation : [nom et site du médiateur]. À défaut d’accord, les tribunaux compétents sont ceux prévus par la loi.
+Ces conditions sont soumises au droit français. En cas de souci, écris-nous d’abord à dressing.ai.app@outlook.com : on cherchera une solution ensemble. Dès l’ouverture des abonnements payants, tu pourras aussi recourir gratuitement à un médiateur de la consommation, dont les coordonnées figureront ici. À défaut d’accord, les tribunaux compétents sont ceux prévus par la loi.

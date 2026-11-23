@@ -158,3 +158,9 @@ Le fondateur a activé la facturation Google Cloud : prépaiement de 5 € (cré
 automatique, valables 1 an, non remboursables). Le crédit de bienvenue de 300 $ exclut l'API Gemini. Vérifié :
 la clé est en niveau payant (Flash et modèle d'image accessibles). Si les crédits tombent à 0, l'appli bascule sur
 le moteur de secours : surveiller la conso (events ai_call). Prochaines étapes : images des duels, retest Flash.
+
+## 2026-11-23 — [cloud] Mentions légales (version bêta)
+Éditeur : Muhammed Delikaya, éditeur non professionnel ; adresse communiquée à l'hébergeur seulement (LCEN
+6-III-2), pas publiée (décision : la publier ou prendre une domiciliation au moment de vendre ; Apple affiche
+l'adresse des vendeurs sur l'App Store). Hébergeurs : OVH (site) et Supabase (données). Contact :
+dressing.ai.app@outlook.com tant que contact@dressingai.fr (Zimbra) n'est pas créée. Mise à jour 0.1.3 publiée.
