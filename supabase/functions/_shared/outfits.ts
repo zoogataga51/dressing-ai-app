@@ -29,7 +29,7 @@ Textes en français, tutoiement, ton chic et chaleureux :
 - name : 2 à 4 mots, évocateur et précis (« Camel du lundi », « Néo-preppy », « Marinière et soleil »), jamais « Look 1 ». Évite les mots usés : élégance, urbain, intemporel, casual, allure. Trois noms bien différents.
 - vibe : une phrase courte qui dit pourquoi cette tenue marche aujourd'hui (météo, humeur).
 - tip : un conseil concret de styliste pour la porter (rentrer, retrousser, ceinturer, superposer…), 1 phrase. Il ne parle QUE des pièces de cette tenue, sans en citer d'autres.
-- Le nom et la phrase décrivent vraiment la tenue (pas « terracotta » s'il n'y a pas de terracotta, pas « nocturne » pour un look de jour).
+- Le nom et la phrase décrivent vraiment la tenue : ils ne citent AUCUNE pièce, matière ou couleur absente de la tenue (pas « trench » sans trench, pas « cachemire » sans cachemire, pas « terracotta » sans terracotta).
 Si la garde-robe ne permet pas 3 tenues correctes, renvoie-en moins plutôt qu'une tenue ratée.`;
 
 export const OUTFIT_SCHEMA = {
@@ -39,13 +39,15 @@ export const OUTFIT_SCHEMA = {
       type: 'array',
       items: {
         type: 'object',
+        // Les pièces d'abord : le modèle nomme la tenue APRÈS l'avoir composée (moins de noms trompeurs).
         properties: {
+          garment_ids: { type: 'array', items: { type: 'string' } },
           name: { type: 'string' },
           vibe: { type: 'string' },
           tip: { type: 'string' },
-          garment_ids: { type: 'array', items: { type: 'string' } },
         },
-        required: ['name', 'vibe', 'tip', 'garment_ids'],
+        required: ['garment_ids', 'name', 'vibe', 'tip'],
+        propertyOrdering: ['garment_ids', 'name', 'vibe', 'tip'],
       },
     },
   },
@@ -166,15 +168,27 @@ export function rejectReason(o: ProposedOutfit, byId: Map<string, WardrobeItem>,
   return null;
 }
 
-/** « Rock Chic Inattendu » → « Rock chic inattendu » (sauf sigles et noms de ville). */
+/** « Rock Chic Inattendu » → « Rock chic inattendu », mais « Douceur d'automne à Roubaix » reste tel quel. */
 function sentenceCase(name: string): string {
   const words = name.split(' ');
-  return words.map((w, i) => {
-    if (i === 0) return w.charAt(0).toUpperCase() + w.slice(1);
-    return /^[A-ZÀ-Ý][a-zà-ÿ'-]+$/.test(w) && !CITY_WORDS.has(w) ? w.toLowerCase() : w;
-  }).join(' ');
+  const first = name.charAt(0).toUpperCase() + name.slice(1);
+  const caps = words.slice(1).filter((w) => /^[A-ZÀ-Ý]/.test(w)).length;
+  const longWords = words.slice(1).filter((w) => w.length > 3).length;
+  if (longWords < 2 || caps < longWords) return first; // pas un « Titre Anglais » : on ne touche qu'à la 1re lettre
+  return words.map((w, i) => (i === 0 ? w.charAt(0).toUpperCase() + w.slice(1) : /^[A-ZÀ-Ý][a-zà-ÿ'-]+$/.test(w) ? w.toLowerCase() : w)).join(' ');
 }
-const CITY_WORDS = new Set(['Paris', 'Lyon', 'Marseille', 'Lille', 'Nice', 'Azur', 'Riviera', 'Saint-Tropez']);
+
+const norm = (t: string) => t.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+
+/** Le nom ou la phrase citent-ils le type d'une pièce de la garde-robe qui n'est pas dans la tenue ? */
+function misleadingName(o: ProposedOutfit, byId: Map<string, WardrobeItem>, wardrobe: WardrobeItem[]): boolean {
+  const text = ` ${norm(`${o.name} ${o.vibe ?? ''}`)} `;
+  const inOutfit = norm(o.garment_ids.map((id) => `${byId.get(id)?.subtype} ${byId.get(id)?.label} ${byId.get(id)?.material ?? ''}`).join(' '));
+  return wardrobe.some((g) => {
+    const word = norm(g.subtype).split(' ')[0];
+    return word.length >= 4 && text.includes(` ${word}`) && !inOutfit.includes(word);
+  });
+}
 
 /** Garde les tenues correctes, distinctes, limitées à 3. */
 export function validateOutfits(list: ProposedOutfit[], wardrobe: WardrobeItem[], weather: Weather): { ok: ProposedOutfit[]; rejected: string[] } {
@@ -185,6 +199,7 @@ export function validateOutfits(list: ProposedOutfit[], wardrobe: WardrobeItem[]
   for (const o of list ?? []) {
     const reason = rejectReason(o, byId, weather);
     const key = [...(o.garment_ids ?? [])].sort().join(',');
+    if (!reason && misleadingName(o, byId, wardrobe)) { rejected.push(`${o.name} : nom trompeur (cite une pièce absente)`); continue; }
     if (reason) rejected.push(`${o.name} : ${reason}`);
     else if (seen.has(key)) rejected.push(`${o.name} : doublon`);
     else { seen.add(key); ok.push({ name: sentenceCase(o.name.trim().slice(0, 40)), vibe: (o.vibe ?? '').trim().slice(0, 140), tip: (o.tip ?? '').trim().slice(0, 220), garment_ids: o.garment_ids }); }

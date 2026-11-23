@@ -21,6 +21,7 @@ const SIGNED_URL_SECONDS = 60 * 60 * 24 * 30; // liens de photos valables 30 jou
 type ProfileRow = {
   first_name: string | null; city: string | null; notification_time: string | null; answers: Record<string, string[]> | null;
   styles: string[] | null; onboarded_at: string | null; trial_started_at: string | null; premium_until?: string | null;
+  timezone?: string;
 };
 
 type GarmentRow = {
@@ -43,7 +44,13 @@ export function profileToRow(p: Profile): ProfileRow {
     styles: p.answers['styles'] ?? [],
     onboarded_at: p.onboarded ? p.onboardedAt ?? new Date().toISOString() : null,
     trial_started_at: p.trialStartedAt ?? null,
+    // Fuseau du téléphone : le serveur prépare les looks avant l'heure de notification locale.
+    ...(deviceTimezone() ? { timezone: deviceTimezone() } : {}),
   };
+}
+
+function deviceTimezone(): string | undefined {
+  try { return Intl.DateTimeFormat().resolvedOptions().timeZone || undefined; } catch { return undefined; }
 }
 
 function rowToProfile(r: ProfileRow, duels: DuelChoice[]): Partial<Profile> {

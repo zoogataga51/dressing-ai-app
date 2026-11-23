@@ -90,3 +90,9 @@ preview / production). docs/BETA.md : ordre des déblocages, fiches stores, conf
 recrutement des testeurs. supabase/sql/indicateurs.sql (entonnoir, matins actifs, rétention, coût IA, conversion)
 testé. Tentative d'activer les comptes anonymes Supabase (inscription sans e-mail) refusée par le garde-fou de
 la session : à décider par le fondateur.
+
+## 2026-11-23 — [cloud] Looks préparés avant le réveil
+Fonction morning-looks + pg_cron toutes les 15 min (migration 0004) : prépare les 3 looks dans les 45 min avant
+l'heure de notification (fuseau envoyé par le téléphone, météo serveur Open-Meteo, coordonnées gardées).
+Testé avec un compte temporaire à Lyon : 3 looks avec la vraie météo, 2e passage ignoré, compte supprimé.
+Noms de looks : pièces choisies avant le nom + détection des noms trompeurs (« trench » sans trench).

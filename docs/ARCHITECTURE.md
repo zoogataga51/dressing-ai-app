@@ -41,6 +41,9 @@ modifier ce fichier.
   Photos : `garments/<id utilisateur>/<id vêtement>.jpg`, affichées par liens temporaires (30 jours).
   Vêtement supprimé = archivé (l'historique garde ses pièces). Looks portés = table `outfits` (statut `worn`).
 - `supabase/functions/delete-account` : suppression définitive (photos + compte, cascade en base).
+- Déployer une fonction (depuis `supabase/functions`) : `POST /v1/projects/<ref>/functions/deploy?slug=<nom>` avec
+  `metadata={"entrypoint_path":"<nom>/index.ts",…}` et un `file` par fichier (`<nom>/index.ts` + tous les `_shared/*.ts`).
+  verify_jwt = false seulement pour revenuecat-webhook (secret partagé) et morning-looks (sans effet si rappelée).
 - E-mails de connexion : le serveur d'envoi gratuit de Supabase n'accepte que les membres de l'équipe et
   2 e-mails/heure, et interdit de personnaliser le modèle (donc pas de code dans l'e-mail, seulement le lien).
   Avant la bêta : brancher un SMTP (nom de domaine + Resend gratuit), puis mettre `{{ .Token }}` dans les modèles.
@@ -55,6 +58,9 @@ modifier ce fichier.
 - Cache : même humeur le même jour → mêmes looks (aucun coût). Plafond : 4 générations par jour et par personne.
 - « Pas pour moi » → statut `disliked`, rappelé à l'IA les jours suivants. Pièces portées depuis moins de 3 jours
   mises de côté (sauf petite garde-robe).
+- **Looks du matin** : `supabase/functions/morning-looks`, appelée toutes les 15 min par pg_cron (migration 0004),
+  prépare les looks (humeur libre, météo de la ville) dans les 45 min avant l'heure de notification de chacun.
+  À l'ouverture, l'appli les reçoit instantanément (cache). Cœur commun : `_shared/generate.ts`.
 - **Secours** : moteur par règles du téléphone (`src/lib/outfitEngine.ts`), utilisé en démo, hors ligne, si l'IA
   échoue ou dépasse 15 s.
 - **Banc d'essai** : `NODE_USE_ENV_PROXY=1 node --experimental-strip-types scripts/looks-lab/run.ts`
