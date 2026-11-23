@@ -11,7 +11,19 @@
  * La liste sera raccourcie après la bêta, en regardant où les gens abandonnent.
  */
 
-export type Option = { id: string; label: string; hint?: string; swatch?: string };
+/** Rayon choisi à la question « wardrobe ». */
+export type Rayon = 'women' | 'men' | 'both';
+
+export type Option = {
+  id: string;
+  label: string;
+  hint?: string;
+  swatch?: string;
+  /** Rayons pour lesquels l'option est proposée (par défaut : tous). */
+  onlyFor?: Rayon[];
+  /** Libellés accordés au rayon (« Élégante » / « Élégant ») ; `label` sert pour « Les deux ». */
+  labels?: Partial<Record<Rayon, string>>;
+};
 
 export type Question = {
   id: string;
@@ -90,20 +102,20 @@ export const QUESTIONS: Question[] = [
       { id: 'none', label: 'Rien de particulier' },
       { id: 'shoulders', label: 'Épaules couvertes' },
       { id: 'legs', label: 'Jambes couvertes' },
-      { id: 'neckline', label: 'Pas de décolleté' },
+      { id: 'neckline', label: 'Pas de décolleté', onlyFor: ['women', 'both'] },
       { id: 'loose', label: 'Tenues amples' },
-      { id: 'hijab', label: 'Je porte le voile' },
+      { id: 'hijab', label: 'Je porte le voile', onlyFor: ['women', 'both'] },
     ], usage: 'Règles strictes : aucune tenue proposée ne doit les enfreindre.' },
 
   // — Tes goûts —
   { id: 'image', section: 'Tes goûts', kind: 'multi', max: 2, title: 'Avec tes tenues, tu veux qu’on te trouve…', subtitle: 'Deux choix maximum.',
     options: [
-      { id: 'elegant', label: 'Élégant·e' },
+      { id: 'elegant', label: 'Élégant·e', labels: { women: 'Élégante', men: 'Élégant' } },
       { id: 'cool', label: 'Cool' },
-      { id: 'original', label: 'Original·e' },
-      { id: 'neat', label: 'Discret·e et soigné·e' },
+      { id: 'original', label: 'Original·e', labels: { women: 'Originale', men: 'Original' } },
+      { id: 'neat', label: 'Discret·e et soigné·e', labels: { women: 'Discrète et soignée', men: 'Discret et soigné' } },
       { id: 'comfy', label: 'Bien dans mes baskets', hint: 'Le confort d’abord' },
-      { id: 'sexy', label: 'Séduisant·e' },
+      { id: 'sexy', label: 'Séduisant·e', labels: { women: 'Séduisante', men: 'Séduisant' } },
     ], usage: 'Ton général des looks et des noms de looks.' },
   { id: 'colorsLoved', section: 'Tes goûts', kind: 'multi', title: 'Les couleurs que tu aimes porter', options: COLORS,
     usage: 'Couleurs favorisées dans les associations.' },
@@ -150,15 +162,15 @@ export const QUESTIONS: Question[] = [
       { id: 'sneakers', label: 'Baskets' },
       { id: 'boots', label: 'Bottines et boots' },
       { id: 'loafers', label: 'Mocassins et derbies' },
-      { id: 'heels', label: 'Talons' },
-      { id: 'flats', label: 'Ballerines' },
+      { id: 'heels', label: 'Talons', onlyFor: ['women', 'both'] },
+      { id: 'flats', label: 'Ballerines', onlyFor: ['women', 'both'] },
       { id: 'sandals', label: 'Sandales' },
     ], usage: 'Préférence de chaussures à garde-robe égale.' },
   { id: 'accessories', section: 'Ta silhouette', kind: 'multi', title: 'Tes accessoires du quotidien', exclusiveOptionId: 'none',
     options: [
       { id: 'cap', label: 'Casquette ou bonnet' },
       { id: 'bag', label: 'Sac' },
-      { id: 'hijab', label: 'Voile' },
+      { id: 'hijab', label: 'Voile', onlyFor: ['women', 'both'] },
       { id: 'jewelry', label: 'Bijoux' },
       { id: 'belt', label: 'Ceinture' },
       { id: 'scarf', label: 'Écharpe ou foulard' },
@@ -170,7 +182,7 @@ export const QUESTIONS: Question[] = [
     options: [
       { id: 'color', label: 'De la couleur' },
       { id: 'favorite', label: 'Ma pièce préférée' },
-      { id: 'dressy', label: 'Plus habillé que d’habitude' },
+      { id: 'dressy', label: 'Plus habillé·e que d’habitude', labels: { women: 'Plus habillée que d’habitude', men: 'Plus habillé que d’habitude' } },
       { id: 'same', label: 'Rien ne change' },
     ], usage: 'Traduction de l’humeur « Chaleureux » / « Audacieux ».' },
   { id: 'confidence', section: 'Tes humeurs', kind: 'single', title: 'Un jour où tu as besoin de confiance',
@@ -178,16 +190,44 @@ export const QUESTIONS: Question[] = [
       { id: 'black', label: 'Une tenue noire, nette' },
       { id: 'statement', label: 'Une pièce forte qui se remarque' },
       { id: 'comfort', label: 'Mon confort absolu' },
-      { id: 'sharp', label: 'Très habillé, impeccable' },
+      { id: 'sharp', label: 'Très habillé·e, impeccable', labels: { women: 'Très habillée, impeccable', men: 'Très habillé, impeccable' } },
     ], usage: 'Traduction de l’humeur « Chic ».' },
   { id: 'lazy', section: 'Tes humeurs', kind: 'single', title: 'Et les jours de flemme ?',
     options: [
       { id: 'jogging', label: 'Jogging assumé' },
       { id: 'jeans', label: 'Jean et sweat' },
-      { id: 'dress', label: 'Une robe simple, c’est réglé' },
+      { id: 'dress', label: 'Une robe simple, c’est réglé', onlyFor: ['women', 'both'] },
       { id: 'effort', label: 'Je fais quand même un effort' },
     ], usage: 'Traduction de l’humeur « Décontracté ».' },
 ];
+
+/** Rayon à partir des réponses (Femme par défaut tant que la question n'a pas été posée). */
+export function rayonOf(answers: Record<string, string[]>): Rayon {
+  const r = answers['wardrobe']?.[0];
+  return r === 'men' || r === 'both' ? r : 'women';
+}
+
+/** Une option est-elle proposée pour ce rayon ? */
+export const optionFits = (o: Option, rayon: Rayon) => !o.onlyFor || o.onlyFor.includes(rayon);
+
+/** Questions adaptées au rayon : options filtrées et libellés accordés. */
+export function questionsFor(rayon: Rayon): Question[] {
+  return QUESTIONS.map((q) => (q.options
+    ? { ...q, options: q.options.filter((o) => optionFits(o, rayon)).map((o) => ({ ...o, label: o.labels?.[rayon] ?? o.label })) }
+    : q));
+}
+
+/** Retire des réponses les options qui ne correspondent plus au rayon (ex. : retour en arrière, rayon changé). */
+export function sanitizeAnswers(answers: Record<string, string[]>): Record<string, string[]> {
+  const rayon = rayonOf(answers);
+  const out: Record<string, string[]> = { ...answers };
+  for (const q of QUESTIONS) {
+    if (!q.options || !out[q.id]) continue;
+    const allowed = new Set(q.options.filter((o) => optionFits(o, rayon)).map((o) => o.id));
+    out[q.id] = out[q.id].filter((id) => allowed.has(id));
+  }
+  return out;
+}
 
 /** Styles déduits des duels (affichés dans le Profil). */
 export const STYLE_OPTIONS: Option[] = [

@@ -138,7 +138,8 @@ export const DUELS_MEN: Duel[] = [
 
 export function duelsFor(wardrobe: string | undefined): Duel[] {
   if (wardrobe === 'men') return DUELS_MEN;
-  if (wardrobe === 'both') return [...DUELS_WOMEN.slice(0, 5), ...DUELS_MEN.slice(0, 5)];
+  // « Les deux » : on alterne un duel femme et un duel homme pour couvrir tous les styles.
+  if (wardrobe === 'both') return DUELS_WOMEN.slice(0, 5).flatMap((w, k) => [w, DUELS_MEN[k]]);
   return DUELS_WOMEN;
 }
 

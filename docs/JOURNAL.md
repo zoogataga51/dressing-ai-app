@@ -48,3 +48,8 @@ cloud avec accès Internet (Supabase, Gemini, Expo) pour que Claude travaille sa
 Gemini OK via secret réseau : gemini-3.5-flash et gemini-3.5-flash-lite répondent ; gemini-2.5-* refusés
 (« plus disponible pour les nouveaux utilisateurs ») → utiliser la famille 3.5. Supabase Management API OK
 (SQL sur syitvnkpdzeapvvekbzk : 6 tables présentes). Début de la liste « À faire » de la passation.
+
+## 2026-11-23 — [cloud] Questionnaire adapté au rayon (retour du fondateur)
+Options filtrées selon le rayon : Homme ne voit plus voile, talons, ballerines, robe, décolleté ; libellés accordés
+(Élégante / Élégant, « Élégant·e » pour Les deux). Réponses nettoyées si le rayon change. Duels « Les deux » :
+alternance femme/homme. tsc + export iOS OK.

@@ -1,5 +1,5 @@
 import { useRouter } from 'expo-router';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { KeyboardAvoidingView, Platform, ScrollView, TextInput, View } from 'react-native';
 import Animated, { FadeInRight, FadeOutLeft, useAnimatedStyle, withSpring, withTiming } from 'react-native-reanimated';
 import { AppText } from '@/components/AppText';
@@ -7,7 +7,7 @@ import { Icon } from '@/components/Icon';
 import { PressableScale } from '@/components/PressableScale';
 import { Button, IconButton, Screen } from '@/components/ui';
 import { track } from '@/lib/analytics';
-import { QUESTIONS, type Option, type Question } from '@/data/questionnaire';
+import { questionsFor, rayonOf, sanitizeAnswers, type Option, type Question } from '@/data/questionnaire';
 import { useStore } from '@/state/AppStore';
 import { useTheme } from '@/theme/ThemeProvider';
 import { fonts, motion } from '@/theme/tokens';
@@ -43,6 +43,9 @@ export default function QuestionnaireScreen() {
   const [answers, setLocal] = useState<Record<string, string[]>>(profile.answers);
   const [text, setText] = useState<Record<string, string>>({ firstName: profile.firstName, city: profile.city });
 
+  // Les options suivent le rayon choisi (Homme : pas de robe, talons, ballerines ni voile).
+  const rayon = rayonOf(answers);
+  const QUESTIONS = useMemo(() => questionsFor(rayon), [rayon]);
   const q: Question = QUESTIONS[step];
   const current = answers[q.id] ?? [];
   const isLast = step === QUESTIONS.length - 1;
@@ -64,7 +67,7 @@ export default function QuestionnaireScreen() {
   const goNext = (latest = answers) => {
     track('onboarding_question', { step: step + 1, id: q.id });
     if (isLast) {
-      setAnswers(latest);
+      setAnswers(sanitizeAnswers(latest));
       updateProfile({ firstName: (text.firstName ?? '').trim(), city: (text.city ?? '').trim() || 'Paris' });
       router.push('/onboarding/duels');
     } else setStep((s) => Math.min(QUESTIONS.length - 1, s + 1));

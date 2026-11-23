@@ -52,7 +52,7 @@ puis les dernières entrées de `docs/JOURNAL.md`.
   développement via le compte Expo moha.del51, si possible sans paiement).
 
 ## Retours du fondateur à traiter
-- Le questionnaire propose robes et voile à un homme : adapter au rayon choisi (à faire en premier).
+- (Traité le 2026-11-23) Questionnaire adapté au rayon.
 
 ## Fait
 Interface complète (onglets, inscription, ajout photo, fiche vêtement, historique, profil, abonnement), thème,
