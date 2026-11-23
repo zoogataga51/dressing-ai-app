@@ -214,3 +214,8 @@ comptes sans e-mail supprimés à 24 mois ; retour dans l'appli = avertissement 
 RESEND_API_KEY (clé Resend « Sending access ») dans Supabase > Edge Functions > Secrets — sans elle, aucun compte
 avec e-mail n'est supprimé (création automatique refusée par le garde-fou de la session ; premiers cas en 2028).
 Politique de confidentialité précisée (site à redéposer).
+
+## 2026-11-23 — [cloud] Visuels des stores + photos de la démo
+15 photos produit générées pour la garde-robe de démo (assets/demo/, ~200 Ko) ; la tuile vêtement remplit
+désormais toute la vignette avec la photo (détourée : posée sur la couleur). 5 visuels marketing par store dans
+docs/store/ (App Store 1320×2868, Google Play 1080×2160), générés par scripts/store-shots/. Mise à jour 0.3.1.

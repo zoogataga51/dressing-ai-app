@@ -82,8 +82,8 @@ Test intermédiaire sans PC : `npx eas-cli update --channel preview`, puis QR co
 
 - **Catégorie** : Style de vie (secondaire : Shopping)
 - **Âge** : 4+ (pas de contenu sensible). **URL d'assistance** : https://dressingai.fr (contact@dressingai.fr). **URL de confidentialité** : https://dressingai.fr/confidentialite.html
-- **Captures** (6,7" et 6,5") : 1. Look du jour (carte teintée) · 2. Choix de l'humeur · 3. Ajout photo avec
-  reconnaissance · 4. Garde-robe par catégories · 5. Duels de looks · 6. Historique. Titre en Syne sur fond papier.
+- **Captures** : prêtes dans docs/store/ (app-store-1…5.png en 1320×2868 pour iPhone 6,9" ; google-play-1…5.png
+  en 1080×2160). Regénérer : scripts/store-shots/capture.js (appli lancée en web, mode démo) puis compose.js.
 
 ## 6. Confidentialité de l'appli (App Store « App Privacy » / Google « Sécurité des données »)
 
