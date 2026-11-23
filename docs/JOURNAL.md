@@ -173,3 +173,7 @@ dressingai.fr généré depuis les textes de l'appli (scripts/build-site.ts → 
 ## 2026-11-23 — [cloud] Boîte contact@dressingai.fr
 Le fondateur a créé contact@dressingai.fr (MX Plan gratuit inclus avec l'hébergement). Adresse de contact remplacée
 partout (appli, CGU/confidentialité, site). Mise à jour 0.1.4 publiée. Site régénéré (site/), à déposer sur OVH.
+
+## 2026-11-23 — [cloud] contact@dressingai.fr reçoit
+Test du fondateur depuis sa boîte perso : reçu. L'e-mail envoyé via Resend est en « delivery_delayed » (OVH fait
+patienter les nouveaux expéditeurs / boîte en cours d'activation), Resend réessaie. Feu vert pour mettre le site en ligne.
