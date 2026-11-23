@@ -30,7 +30,8 @@
       "versionCode": 1,
       "permissions": [
         "android.permission.CAMERA",
-        "android.permission.POST_NOTIFICATIONS"
+        "android.permission.POST_NOTIFICATIONS",
+        "android.permission.RECORD_AUDIO"
       ],
       "blockedPermissions": [
         "android.permission.RECORD_AUDIO"
@@ -64,13 +65,26 @@
     "experiments": {
       "typedRoutes": false
     },
-    "owner": "moha.del51",
+    "owner": "dressing-ai.com",
     "description": "Chaque matin, des looks composés avec tes propres vêtements, selon la météo et ton humeur.",
     "locales": {
       "fr": "./locales/fr.json"
     },
     "runtimeVersion": {
-      "policy": "appVersion"
+      "policy": "sdkVersion"
+    },
+    "extra": {
+      "router": {
+        "asyncRoutes": {
+          "web": true
+        }
+      },
+      "eas": {
+        "projectId": "5acb6e9b-6ef9-4b80-9c19-04c30173c09e"
+      }
+    },
+    "updates": {
+      "url": "https://u.expo.dev/5acb6e9b-6ef9-4b80-9c19-04c30173c09e"
     }
   }
 }

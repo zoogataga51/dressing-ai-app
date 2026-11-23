@@ -16,7 +16,17 @@ textes des fiches, réponses aux questionnaires de confidentialité, CGU et poli
 
 ## 2. Construire l'appli (Claude, depuis le cloud)
 
-Il faut un jeton Expo (compte `moha.del51`) ajouté comme secret de l'environnement cloud, puis :
+Projet EAS : organisation `dressing-ai.com`, projet `dressing-ai` (id 5acb6e9b-6ef9-4b80-9c19-04c30173c09e).
+Jeton : robot `claude-cloud` (rôle Developer), en secret réseau de l'environnement cloud (api.expo.dev).
+Toutes les commandes : préfixer par `EXPO_TOKEN=proxy-injected` (le vrai jeton est injecté par le proxy).
+
+**Test sur iPhone sans PC (Expo Go)** :
+`EXPO_TOKEN=proxy-injected npx eas-cli@27.11.0 update --channel preview --environment preview --platform ios --message "…" --non-interactive`
+puis, sur expo.dev > projet > Updates > la mise à jour > « Preview » : QR code à scanner avec l'appareil photo de
+l'iPhone (Expo Go installé, connecté au compte moha.del51). `runtimeVersion` est en `sdkVersion` pour Expo Go :
+le repasser en `{"policy":"appVersion"}` au premier build TestFlight.
+
+Builds (quand les comptes Apple/Google existeront) :
 
 ```bash
 npx eas-cli init                       # crée le projet EAS (une seule fois)

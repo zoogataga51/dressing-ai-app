@@ -129,3 +129,9 @@ de validation. Prochaine étape : compte Resend + entrées DNS, puis SMTP dans S
 Clé Resend enregistrée en secret réseau (api.resend.com). Domaine dressingai.fr déclaré (région UE), 5 entrées DNS
 ajoutées par le fondateur chez OVH (docs/DNS.md), DKIM + SPF vérifiés. E-mail de test envoyé depuis
 noreply@dressingai.fr vers l'adresse du projet. Reste : SMTP dans Supabase (fondateur), puis modèles d'e-mail.
+
+## 2026-11-23 — [cloud] Expo branché, 1re mise à jour publiée
+Robot Expo claude-cloud (rôle Developer, organisation dressing-ai.com) en secret réseau. app.json : owner
+dressing-ai.com, projet EAS dressing-ai créé (id 5acb6e9b…), expo-updates installé, runtimeVersion sdkVersion
+(pour Expo Go). Mise à jour iOS publiée sur le canal preview : le fondateur peut tester sur iPhone sans PC.
+E-mail de test Resend livré mais classé en indésirables chez Outlook (domaine neuf).
