@@ -182,7 +182,7 @@ export default function ProfileScreen() {
             <Chip key={t} label={t.replace(':', ' h ')} selected={profile.notificationTime === t} onPress={async () => {
               updateProfile({ notificationTime: t });
               track('notification_time_set', { time: t });
-              const ok = await scheduleMorningNotification(t, profile.firstName);
+              const ok = await scheduleMorningNotification(t, profile.firstName, auth.userId);
               if (!ok) Alert.alert('Notifications désactivées', 'Active-les dans les réglages du téléphone pour recevoir ton look du matin.');
               setSheet(null);
             }} />

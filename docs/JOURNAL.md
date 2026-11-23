@@ -193,3 +193,9 @@ tenues à plat sur fond papier, sans personne ni logo ; abaya et qamis vérifié
 Retest en offre payante (16 profils) : Flash 15/16, 0,87 c€, 4,5 s ; Flash-Lite 15/16, 0,12 c€, 1,7 s. Flash
 nettement plus fin sur les profils exigeants. Décision : Flash pour morning-looks (préparé avant le réveil),
 Flash-Lite pour les générations à la demande. Testé en réel (compte temporaire supprimé). ≈ 0,30 €/utilisateur/mois.
+
+## 2026-11-23 — [cloud] Notification du matin avec le nom du look
+Migration 0005 (profiles.last_push_on). L'appli enregistre son jeton Expo (avec compte) et n'a plus de rappel local
+en doublon ; morning-looks envoie « Ton look du jour : … » à l'heure choisie. Testé avec un faux jeton (jeton
+oublié comme prévu). Test réel à faire par le fondateur sur iPhone (réactiver l'heure de notification dans le
+Profil pour enregistrer le jeton). Mise à jour 0.2.1 publiée.

@@ -12,6 +12,7 @@ import { mix, readableOn } from '@/lib/color';
 import { track } from '@/lib/analytics';
 import { scheduleMorningNotification } from '@/lib/notifications';
 import { useStore, type DuelChoice } from '@/state/AppStore';
+import { useAuth } from '@/state/AuthStore';
 import { useTheme } from '@/theme/ThemeProvider';
 import { fonts, motion } from '@/theme/tokens';
 
@@ -46,6 +47,7 @@ export default function DuelsScreen() {
   const { colors } = useTheme();
   const router = useRouter();
   const { profile, setDuels, setAnswers, completeOnboarding } = useStore();
+  const { userId } = useAuth();
   const duels = useMemo(() => duelsFor(profile.answers['wardrobe']?.[0]), [profile.answers]);
   const [i, setI] = useState(0);
   const [choices, setChoices] = useState<DuelChoice[]>([]);
@@ -64,7 +66,7 @@ export default function DuelsScreen() {
     setAnswers({ ...profile.answers, styles });
     completeOnboarding();
     track('onboarding_done', { styles });
-    scheduleMorningNotification(profile.notificationTime, profile.firstName).catch(() => {});
+    scheduleMorningNotification(profile.notificationTime, profile.firstName, userId).catch(() => {});
     if (redo) router.dismissTo('/(tabs)/profil'); // retour au Profil, sans laisser le questionnaire derrière
     else router.replace('/ajout?onboarding=1');
   };

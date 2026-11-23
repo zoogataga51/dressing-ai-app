@@ -61,6 +61,9 @@ modifier ce fichier.
 - **Looks du matin** : `supabase/functions/morning-looks`, appelée toutes les 15 min par pg_cron (migration 0004),
   prépare les looks (humeur libre, météo de la ville) dans les 45 min avant l'heure de notification de chacun.
   À l'ouverture, l'appli les reçoit instantanément (cache). Cœur commun : `_shared/generate.ts`.
+- **Notification du matin** : l'appli envoie son jeton Expo (profiles.push_token) ; morning-looks envoie à l'heure
+  choisie « Ton look du jour : <nom> » via le service push gratuit d'Expo (une fois par jour, profiles.last_push_on ;
+  jeton oublié si le téléphone est désinscrit). Sans jeton (démo) : rappel local programmé sur le téléphone.
 - **Secours** : moteur par règles du téléphone (`src/lib/outfitEngine.ts`), utilisé en démo, hors ligne, si l'IA
   échoue ou dépasse 15 s.
 - **Banc d'essai** : `NODE_USE_ENV_PROXY=1 node --experimental-strip-types scripts/looks-lab/run.ts`

@@ -4,6 +4,9 @@
 // notification arrive dans les 45 prochaines minutes (dans son fuseau), avec un essai ou un abonnement actif et
 // une garde-robe suffisante : météo de sa ville + composition des looks (humeur « libre »).
 //
+// Puis, à l'heure pile de la notification (dans le quart d'heure), elle envoie la notification push avec le nom
+// du look (service gratuit d'Expo), une seule fois par jour et par personne (profiles.last_push_on).
+//
 // Sans risque si quelqu'un l'appelle à la main : une personne déjà servie aujourd'hui est ignorée (aucun coût en
 // plus), et les plafonds par personne de generate-outfits s'appliquent. Donc pas de jeton exigé (verify_jwt false).
 
@@ -25,7 +28,7 @@ function localNow(tz: string): { day: string; minutes: number } {
 Deno.serve(async () => {
   const admin = adminClient();
   const { data: profiles } = await admin.from('profiles')
-    .select('id, city, latitude, longitude, timezone, notification_time, trial_started_at, premium_until, created_at')
+    .select('id, first_name, city, latitude, longitude, timezone, notification_time, push_token, last_push_on, trial_started_at, premium_until, created_at')
     .not('onboarded_at', 'is', null);
 
   const due = (profiles ?? []).filter((p) => {
@@ -56,5 +59,38 @@ Deno.serve(async () => {
     const r = await generateForUser(admin, p.id, { mood: 'free', weather, day, models: MORNING_MODELS, timeoutMs: 40_000 });
     done[p.id] = r.outfits.length ? `${r.outfits.length} looks` : r.reason ?? 'aucun look';
   }
-  return json({ candidates: due.length, done });
+  // Notifications : personnes dont l'heure est arrivée dans le dernier quart d'heure et pas encore prévenues aujourd'hui.
+  const pushes: Record<string, string> = {};
+  for (const p of profiles ?? []) {
+    if (!p.push_token || !hasAccess(p)) continue;
+    const { day, minutes } = localNow(p.timezone || 'Europe/Paris');
+    const [h, m] = String(p.notification_time ?? '07:30').split(':').map(Number);
+    const since = (minutes - (h * 60 + m) + 1440) % 1440;
+    if (since > 14 || p.last_push_on === day) continue;
+    const { data: look } = await admin.from('outfits').select('name, vibe').eq('user_id', p.id).eq('for_date', day)
+      .eq('source', 'ai').eq('mood', 'free').order('position').limit(1).maybeSingle();
+    const message = {
+      to: p.push_token,
+      title: p.first_name ? `Bonjour ${p.first_name} !` : 'Bonjour !',
+      body: look ? `Ton look du jour : ${look.name}. ${look.vibe ?? ''}`.trim() : 'Tes looks du jour t’attendent ✦',
+      sound: 'default',
+      channelId: 'morning',
+      data: { url: '/' },
+    };
+    const r = await fetch('https://exp.host/--/api/v2/push/send', {
+      method: 'POST', headers: { 'Content-Type': 'application/json', Accept: 'application/json' }, body: JSON.stringify(message),
+    }).then((x) => x.json()).catch(() => null);
+    const status = r?.data?.status;
+    if (status === 'ok') {
+      await admin.from('profiles').update({ last_push_on: day }).eq('id', p.id);
+      await admin.from('events').insert({ user_id: p.id, name: 'push_sent', props: { with_look: !!look } });
+      pushes[p.id] = 'envoyée';
+    } else {
+      // Téléphone désinscrit (appli supprimée, notifications coupées) : on oublie le jeton.
+      if (r?.data?.details?.error === 'DeviceNotRegistered') await admin.from('profiles').update({ push_token: null }).eq('id', p.id);
+      pushes[p.id] = `échec ${r?.data?.message ?? 'réseau'}`.slice(0, 80);
+    }
+  }
+
+  return json({ candidates: due.length, done, pushes });
 });
