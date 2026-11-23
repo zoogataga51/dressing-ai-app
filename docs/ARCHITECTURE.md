@@ -74,7 +74,13 @@ modifier ce fichier.
 |---|---|---|---|---|
 | 3.5 Flash (réflexion basse) | 9/16 (souvent « saturé ») | 7/16 | 0,27 c€ (jusqu'à 0,8) | 5,4 s |
 | 3.5 Flash-Lite seul, 3 tenues | ~11/16 | 0 | 0,10 c€ | 1,6 s |
-| **3.5 Flash-Lite + seconde chance (retenu)** | **15/16** | **0** | **0,11 c€** | **1,9 s** |
+| **3.5 Flash-Lite + seconde chance (retenu à la demande)** | **15/16** | **0** | **0,11 c€** | **1,9 s** |
+| 3.5 Flash, offre payante (2026-11-23 soir) | 15/16 | 0 | 0,87 c€ | 4,5 s |
+
+**Choix final (offre payante)** : looks du matin préparés par morning-looks avec **Flash** (meilleur œil :
+superpositions, contresens évités, personne n'attend) ; changements d'humeur dans la journée avec **Flash-Lite**
+(rapide). Réglable sans redéployer le code via les secrets GEMINI_MORNING_MODELS / GEMINI_OUTFIT_MODELS.
+Coût estimé ≈ 0,30 €/utilisateur actif/mois.
 
 Offre gratuite : Flash limité à 20 requêtes/jour (redirigé vers 3.6 Flash), Flash-Lite à 15/minute.
 Coût estimé par utilisateur actif : ~0,05 €/mois de looks + ~0,03 € de photos le premier mois → bien sous 0,50 €.

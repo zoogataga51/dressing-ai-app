@@ -18,7 +18,7 @@ for (const c of CASES) {
     for (const o of r.ok) console.log(`  ✔ ${o.name} : ${o.garment_ids.map((id) => label.get(id)).join(' + ')}\n      « ${o.vibe} » — ${o.tip}`);
     for (const x of r.rejected) console.log(`  ✘ ${x}`);
   } catch (e) { errors++; console.log(`\n## ${c.name} — ERREUR ${e}`); }
-  await new Promise((r) => setTimeout(r, 4500)); // offre gratuite : 15 requêtes par minute
+  if (process.env.LAB_SLOW) await new Promise((r) => setTimeout(r, 4500)); // offre gratuite : 15 requêtes par minute
 }
 const n = CASES.length;
 console.log(`\n${models.join('→')} (${thinking}) : ${three}/${n} cas avec 3 looks, ${kept} looks gardés, ${retries} 2e essais, ${errors} erreurs, ` +

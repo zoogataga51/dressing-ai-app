@@ -7,12 +7,12 @@
 // Sans risque si quelqu'un l'appelle à la main : une personne déjà servie aujourd'hui est ignorée (aucun coût en
 // plus), et les plafonds par personne de generate-outfits s'appliquent. Donc pas de jeton exigé (verify_jwt false).
 
-import { generateForUser, hasAccess } from '../_shared/generate.ts';
+import { generateForUser, hasAccess, MORNING_MODELS } from '../_shared/generate.ts';
 import { adminClient, json } from '../_shared/server.ts';
 import { geocode, todayWeather } from '../_shared/weather.ts';
 
 const WINDOW_MIN = 45;
-const MAX_PER_RUN = 12; // offre gratuite Gemini : 15 requêtes par minute
+const MAX_PER_RUN = 25; // ~5 s par personne avec Flash : reste sous la limite de durée d'une fonction
 
 /** Heure et date locales d'un fuseau, sans bibliothèque. */
 function localNow(tz: string): { day: string; minutes: number } {
@@ -53,7 +53,7 @@ Deno.serve(async () => {
     }
     const weather = await todayWeather(lat, lon, p.city ?? undefined).catch(() => null);
     if (!weather) { done[p.id] = 'météo indisponible'; continue; }
-    const r = await generateForUser(admin, p.id, { mood: 'free', weather, day });
+    const r = await generateForUser(admin, p.id, { mood: 'free', weather, day, models: MORNING_MODELS, timeoutMs: 40_000 });
     done[p.id] = r.outfits.length ? `${r.outfits.length} looks` : r.reason ?? 'aucun look';
   }
   return json({ candidates: due.length, done });

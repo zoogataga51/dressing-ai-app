@@ -6,7 +6,10 @@ import { composeOutfits } from './compose.ts';
 import { buildOutfitPrompt, type Mood, type WardrobeItem, type Weather } from './outfits.ts';
 import { callsToday, logAiCall } from './server.ts';
 
-const MODELS = (Deno.env.get('GEMINI_OUTFIT_MODELS') ?? 'gemini-3.5-flash-lite,gemini-3.1-flash-lite').split(',');
+// À la demande (l'utilisateur attend) : Flash-Lite, rapide et économique.
+const FAST_MODELS = (Deno.env.get('GEMINI_OUTFIT_MODELS') ?? 'gemini-3.5-flash-lite,gemini-3.1-flash-lite').split(',');
+// Préparés avant le réveil (personne n'attend) : Flash, plus fin sur le style (testé le 2026-11-23, 7× plus cher).
+export const MORNING_MODELS = (Deno.env.get('GEMINI_MORNING_MODELS') ?? 'gemini-3.5-flash,gemini-3.5-flash-lite').split(',');
 const MAX_PER_DAY = 4;
 const DAY = 86_400_000;
 export const TRIAL_DAYS = 7; // même règle que src/lib/access.ts
@@ -23,7 +26,7 @@ export function hasAccess(p: { trial_started_at: string | null; premium_until: s
   return Date.now() <= Date.parse(p.trial_started_at ?? p.created_at) + TRIAL_DAYS * DAY;
 }
 
-export async function generateForUser(admin: SupabaseClient, userId: string, opts: { mood: Mood; weather: Weather; day: string }): Promise<GenerateResult> {
+export async function generateForUser(admin: SupabaseClient, userId: string, opts: { mood: Mood; weather: Weather; day: string; models?: string[]; timeoutMs?: number }): Promise<GenerateResult> {
   const { mood, weather, day } = opts;
   const user = { id: userId }; // même écriture que dans les fonctions
   // 0. Essai de 7 jours (depuis l'inscription) ou abonnement Premium en cours ; sinon, plus de looks.
@@ -70,7 +73,7 @@ export async function generateForUser(admin: SupabaseClient, userId: string, opt
 
   // 3. Appel à l'IA, contrôle qualité, enregistrement.
   try {
-    const r = await composeOutfits({ apiKey, models: MODELS, prompt, wardrobe: available, weather, thinking: 'low', timeoutMs: 15_000 });
+    const r = await composeOutfits({ apiKey, models: opts.models ?? FAST_MODELS, prompt, wardrobe: available, weather, thinking: 'low', timeoutMs: opts.timeoutMs ?? 15_000 });
     const ok = r.ok;
     await logAiCall(admin, user.id, {
       fn: 'generate-outfits', model: r.model, tokens_in: r.tokensIn, tokens_out: r.tokensOut, cost_eur: r.costEur, ms: r.ms,

@@ -188,3 +188,8 @@ contact@dressingai.fr présent. Toutes les étapes gratuites sont faites ; reste
 tenues à plat sur fond papier, sans personne ni logo ; abaya et qamis vérifiés à la main. Réduites en 480×640
 (1,3 Mo au total) dans assets/duels/, branchées via src/data/duelImages.ts (généré). Scripts : scripts/duel-images/
 (generate.ts puis resize.py). Mise à jour 0.2 publiée.
+
+## 2026-11-23 — [cloud] Flash pour les looks du matin
+Retest en offre payante (16 profils) : Flash 15/16, 0,87 c€, 4,5 s ; Flash-Lite 15/16, 0,12 c€, 1,7 s. Flash
+nettement plus fin sur les profils exigeants. Décision : Flash pour morning-looks (préparé avant le réveil),
+Flash-Lite pour les générations à la demande. Testé en réel (compte temporaire supprimé). ≈ 0,30 €/utilisateur/mois.
