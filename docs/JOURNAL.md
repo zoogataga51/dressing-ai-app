@@ -43,3 +43,8 @@ Tables, RLS et bucket `garments` en place. Ne pas relancer ce fichier (les futur
 ## 2026-11-23 02:55 — [cloud] Passation écrite
 docs/PASSATION.md créé : contexte, décisions, comptes, état et ordre de travail. Le fondateur crée un environnement
 cloud avec accès Internet (Supabase, Gemini, Expo) pour que Claude travaille sans relais par le PC.
+
+## 2026-11-23 — [cloud] Accès réseau vérifié
+Gemini OK via secret réseau : gemini-3.5-flash et gemini-3.5-flash-lite répondent ; gemini-2.5-* refusés
+(« plus disponible pour les nouveaux utilisateurs ») → utiliser la famille 3.5. Supabase Management API OK
+(SQL sur syitvnkpdzeapvvekbzk : 6 tables présentes). Début de la liste « À faire » de la passation.
