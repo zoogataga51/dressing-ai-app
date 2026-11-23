@@ -20,6 +20,7 @@ export type EventName =
   | 'onboarding_duel'
   | 'onboarding_done'
   | 'garment_added'
+  | 'garment_ai_override'
   | 'garment_edited'
   | 'garment_removed'
   | 'outfit_viewed'

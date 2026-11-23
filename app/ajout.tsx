@@ -9,6 +9,7 @@ import Animated, {
 import { AppText } from '@/components/AppText';
 import { ChipRow } from '@/components/ChipRow';
 import { Icon } from '@/components/Icon';
+import { PressableScale } from '@/components/PressableScale';
 import { Button, Chip, IconButton, ProgressBar, Screen, Sticker } from '@/components/ui';
 import { analyzeGarment, type GarmentGuess } from '@/lib/ai';
 import { track } from '@/lib/analytics';
@@ -113,7 +114,7 @@ export default function AddGarmentScreen() {
               </Animated.View>
               {scanning ? <ScanLine /> : null}
               <View style={{ position: 'absolute', top: 14, left: 14 }}>
-                <Sticker tone="highlight" icon="sparkle" label={scanning ? 'Analyse en cours…' : !guess ? '' : !guess.isGarment ? 'Pas de vêtement repéré' : guess.confidence > 0 ? 'Reconnu par l’IA' : 'Vérifie les infos'} />
+                <Sticker tone="highlight" icon="sparkle" label={scanning ? 'Analyse en cours…' : !guess ? '' : !guess.isGarment ? 'Pas de vêtement repéré' : guess.confidence > 0 ? 'Reconnu par l’IA' : userId ? 'À décrire' : 'Mode démo'} />
               </View>
             </>
           ) : (
@@ -128,10 +129,23 @@ export default function AddGarmentScreen() {
           )}
         </View>
 
-        {guess ? (
+        {guess && !guess.isGarment ? (
+          // L'IA ne voit pas de vêtement : on bloque l'ajout, sauf si la personne confirme.
+          <Animated.View entering={FadeInDown.duration(motion.slow)} style={{ gap: 12, padding: 18, borderRadius: 22, backgroundColor: colors.surface }}>
+            <AppText variant="heading">On ne voit pas de vêtement</AppText>
+            <AppText muted>Pose la pièce à plat ou sur un cintre, en entier, bien éclairée, sur un fond uni. Évite de la porter sur toi.</AppText>
+            <View style={{ flexDirection: 'row', gap: 10 }}>
+              <Button label="Reprendre" icon="camera" onPress={() => pickPhoto(true)} style={{ flex: 1, height: 48 }} />
+              <Button label="Galerie" kind="inverse" onPress={() => pickPhoto(false)} style={{ flex: 1, height: 48 }} />
+            </View>
+            <PressableScale onPress={() => { set({ isGarment: true }); track('garment_ai_override'); }} style={{ alignSelf: 'center', paddingVertical: 8 }}>
+              <AppText variant="smallStrong" color={colors.primary}>C’est bien un vêtement, je le décris moi-même</AppText>
+            </PressableScale>
+          </Animated.View>
+        ) : guess ? (
           <Animated.View entering={FadeInDown.duration(motion.slow)} style={{ gap: 16 }}>
             {guess.label ? <AppText variant="heading">{guess.label}</AppText> : null}
-            <AppText variant="eyebrow">{guess.isGarment ? 'Touche pour corriger' : 'On ne voit pas bien le vêtement : vérifie ou reprends la photo'}</AppText>
+            <AppText variant="eyebrow">{guess.confidence > 0 ? 'Touche pour corriger' : userId ? 'L’IA n’a pas pu analyser la photo : décris la pièce' : 'Mode démo : l’IA ne regarde pas la photo, décris la pièce'}</AppText>
             <ChipRow label="Type">
               {CATEGORIES.map((c) => <Chip key={c.id} label={c.label} selected={guess.category === c.id} onPress={() => set({ category: c.id })} />)}
             </ChipRow>

@@ -140,3 +140,9 @@ E-mail de test Resend livré mais classé en indésirables chez Outlook (domaine
 Le fondateur a ouvert la bêta dans Expo Go via EAS Update. Retour : flèche retour inactive sur la 1re question
 (pas d'écran derrière) → corrigé (retour accueil, compte sans e-mail vide abandonné). Polices : 6 fichiers au lieu
 de 46 (imports par graisse). Mise à jour 0.1.1 publiée ; QR permanent sur le canal preview (docs/qr/).
+
+## 2026-11-23 — [cloud] Photo sans vêtement bloquée
+Question du fondateur. Avant : l'IA signalait « pas de vêtement » mais l'ajout restait possible. Maintenant : écran
+« On ne voit pas de vêtement » avec Reprendre / Galerie, et « C'est bien un vêtement » pour forcer (événement
+garment_ai_override). Mode démo signalé clairement (l'IA ne regarde pas la photo). Testé : logo → is_garment false.
+Mise à jour 0.1.2 publiée.
