@@ -8,8 +8,10 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 
-const url = process.env.EXPO_PUBLIC_SUPABASE_URL ?? '';
-const anonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY ?? '';
+// Valeurs publiques du projet (sans danger : la sécurité est assurée par les règles RLS).
+// Un fichier `.env` peut les remplacer (ex. projet de test).
+const url = process.env.EXPO_PUBLIC_SUPABASE_URL || 'https://syitvnkpdzeapvvekbzk.supabase.co';
+const anonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY || 'sb_publishable_jbXF_1Zg6xY6QnuTzgw4Lw_Bcd1x7zd';
 
 export const SUPABASE_ENABLED = url.length > 0 && anonKey.length > 0;
 

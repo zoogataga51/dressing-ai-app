@@ -88,7 +88,7 @@ create table public.outfits (
 create index outfits_user_date_idx on public.outfits (user_id, for_date desc);
 
 -- Pièces réellement portées (pour éviter les répétitions et nourrir l'apprentissage).
-create view public.wear_history as
+create view public.wear_history with (security_invoker = true) as
   select o.user_id, o.for_date, unnest(o.garment_ids) as garment_id
   from public.outfits o where o.status = 'worn';
 

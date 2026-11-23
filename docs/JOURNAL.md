@@ -30,3 +30,8 @@ Identité Git réglée sur ce PC (nom zoogataga51, e-mail masqué GitHub noreply
 ## 2026-11-22 22:38 — [PC] Mode tunnel OK
 Fondateur connecté à son compte Expo (`npx expo login`, via le navigateur). `npx expo start --tunnel` marche : QR code en exps://…on.expo.app,
 utilisable même si le téléphone n'est pas sur le même Wi-Fi que le PC. Test sur téléphone : en attente.
+
+## 2026-11-23 01:40 — [cloud] Projet Supabase créé par le fondateur
+Projet `dressing-ai` (org « Dressing AI », compte dressing.ai.app@outlook.com, région Europe). URL et clé publishable
+ajoutées dans src/lib/supabase.ts. Vue wear_history passée en security_invoker (sinon elle contournait la RLS).
+Prochaine étape : exécuter supabase/migrations/0001_init.sql dans le SQL Editor.
