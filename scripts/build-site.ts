@@ -49,7 +49,7 @@ const home = page('Dressing AI · Ton look du jour, avec tes vêtements', `
 <li>Quelques questions et des duels de looks pour cerner ton style.</li>
 <li>Chaque matin, 1 à 3 tenues prêtes, avec un conseil de styliste.</li></ul>
 </div>
-<p style="margin-top:24px">Une question ? Écris-nous : <a href="mailto:dressing.ai.app@outlook.com">dressing.ai.app@outlook.com</a></p>
+<p style="margin-top:24px">Une question ? Écris-nous : <a href="mailto:contact@dressingai.fr">contact@dressingai.fr</a></p>
 `, 'Chaque matin, des tenues composées avec ta garde-robe, la météo et ton humeur.');
 
 mkdirSync('site', { recursive: true });

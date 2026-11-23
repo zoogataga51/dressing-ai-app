@@ -169,3 +169,7 @@ dressing.ai.app@outlook.com tant que contact@dressingai.fr (Zimbra) n'est pas cr
 Décision du fondateur : son adresse personnelle sera publiée au moment de la vente (pas de domiciliation). Site
 dressingai.fr généré depuis les textes de l'appli (scripts/build-site.ts → site/ : index, cgu, confidentialite),
 à déposer par le fondateur dans « www » de l'hébergement OVH gratuit (le domaine répond déjà en HTTPS).
+
+## 2026-11-23 — [cloud] Boîte contact@dressingai.fr
+Le fondateur a créé contact@dressingai.fr (MX Plan gratuit inclus avec l'hébergement). Adresse de contact remplacée
+partout (appli, CGU/confidentialité, site). Mise à jour 0.1.4 publiée. Site régénéré (site/), à déposer sur OVH.

@@ -8,7 +8,7 @@ Tes données servent à une seule chose : composer tes looks. On ne les vend pas
 
 ## Qui est responsable de tes données ?
 
-Dressing AI est édité par Muhammed Delikaya (éditeur non professionnel ; coordonnées communiquées à l’hébergeur). Pour toute question sur tes données : dressing.ai.app@outlook.com.
+Dressing AI est édité par Muhammed Delikaya (éditeur non professionnel ; coordonnées communiquées à l’hébergeur). Pour toute question sur tes données : contact@dressingai.fr.
 
 ## Ce qu’on collecte
 - Ton compte : ton adresse e-mail (pour la connexion par code).
@@ -56,7 +56,7 @@ Certains de ces prestataires peuvent traiter des données hors de l’Union euro
 
 Tu peux accéder à tes données, les corriger, les effacer, en demander une copie (portabilité), t’opposer à un traitement, limiter son usage ou retirer ton consentement à tout moment.
 - Effacer ton compte : Profil > Supprimer mon compte.
-- Pour tout le reste : écris à dressing.ai.app@outlook.com. Réponse sous un mois maximum.
+- Pour tout le reste : écris à contact@dressingai.fr. Réponse sous un mois maximum.
 - Si tu penses que tes droits ne sont pas respectés, tu peux saisir la CNIL (cnil.fr).
 
 ## Âge minimum

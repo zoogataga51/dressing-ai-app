@@ -12,7 +12,7 @@ export type LegalDoc = { id: 'cgu' | 'confidentialite'; title: string; updated: 
 
 const EDITOR = 'Muhammed Delikaya (éditeur non professionnel ; coordonnées communiquées à l’hébergeur)';
 const HOST = 'OVH SAS, 2 rue Kellermann, 59100 Roubaix (site dressingai.fr) ; Supabase Inc., serveurs situés dans l’Union européenne (données de l’appli)';
-const CONTACT = 'dressing.ai.app@outlook.com'; // passer à contact@dressingai.fr quand la boîte Zimbra sera créée
+const CONTACT = 'contact@dressingai.fr';
 
 export const PRIVACY: LegalDoc = {
   id: 'confidentialite',

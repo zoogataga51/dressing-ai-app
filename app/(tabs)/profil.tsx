@@ -57,7 +57,7 @@ export default function ProfileScreen() {
     const { error } = await supabase!.functions.invoke('delete-account', { method: 'POST' });
     setDeleting(false);
     if (error) {
-      Alert.alert('Suppression impossible', 'Vérifie ta connexion Internet et réessaie. Si ça continue, écris-nous : dressing.ai.app@outlook.com');
+      Alert.alert('Suppression impossible', 'Vérifie ta connexion Internet et réessaie. Si ça continue, écris-nous : contact@dressingai.fr');
       return;
     }
     await leave();
@@ -162,7 +162,7 @@ export default function ProfileScreen() {
         <Section title="Informations" delay={300}>
           <Row label="Conditions d’utilisation" onPress={() => router.push('/legal/cgu')} />
           <Row label="Confidentialité" onPress={() => router.push('/legal/confidentialite')} />
-          <Row label="Nous écrire" value="dressing.ai.app@outlook.com" last onPress={() => Linking.openURL('mailto:dressing.ai.app@outlook.com')} />
+          <Row label="Nous écrire" value="contact@dressingai.fr" last onPress={() => Linking.openURL('mailto:contact@dressingai.fr')} />
         </Section>
 
         <AppText variant="tiny" muted style={{ textAlign: 'center', marginTop: space.sm }}>Dressing AI · version 0.1 (bêta)</AppText>
