@@ -12,6 +12,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Crypto from 'expo-crypto';
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { MOCK_HISTORY, MOCK_WARDROBE } from '@/data/mock';
+import { rayonOf } from '@/data/questionnaire';
 import { localDate } from '@/lib/date';
 import { enqueue, flush, pullAll, type Op } from '@/lib/sync';
 import type { Garment, HistoryEntry, Mood, Outfit } from '@/types';
@@ -120,6 +121,9 @@ export function AppStoreProvider({ children }: { children: ReactNode }) {
 
   const patchProfile = useCallback((patch: Partial<Profile>) => {
     const profile = { ...stateRef.current.profile, ...patch };
+    // Mis à jour tout de suite : plusieurs modifications à la suite (fin du questionnaire, des duels)
+    // doivent s'additionner, pas repartir d'une version périmée avant le prochain affichage.
+    stateRef.current = { ...stateRef.current, profile };
     setState((s) => ({ ...s, profile: { ...s.profile, ...patch } }));
     send({ t: 'profile', profile });
   }, [send]);
@@ -139,6 +143,10 @@ export function AppStoreProvider({ children }: { children: ReactNode }) {
       const p = stateRef.current.profile;
       // Refaire le questionnaire ne relance pas l'essai gratuit.
       patchProfile({ onboarded: true, onboardedAt: p.onboardedAt ?? now, trialStartedAt: p.trialStartedAt ?? now });
+      // Démo au rayon Homme : on retire de la garde-robe d'exemple ce qui ne lui correspond pas.
+      if (!userId && rayonOf(p.answers) === 'men') {
+        setState((s) => ({ ...s, wardrobe: s.wardrobe.filter((g) => g.category !== 'dress' && !/voile/i.test(g.subtype)) }));
+      }
     },
     addGarment: (g) => {
       setState((s) => ({ ...s, wardrobe: [g, ...s.wardrobe] }));
@@ -146,6 +154,7 @@ export function AppStoreProvider({ children }: { children: ReactNode }) {
     },
     updateGarment: (id, patch) => {
       const current = stateRef.current.wardrobe.find((g) => g.id === id);
+      if (current) stateRef.current = { ...stateRef.current, wardrobe: stateRef.current.wardrobe.map((g) => (g.id === id ? { ...g, ...patch } : g)) };
       setState((s) => ({ ...s, wardrobe: s.wardrobe.map((g) => (g.id === id ? { ...g, ...patch } : g)) }));
       if (current) send({ t: 'garment', garment: { ...current, ...patch } });
     },

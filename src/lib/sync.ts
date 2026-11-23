@@ -151,7 +151,7 @@ export type Op =
   | { t: 'duels'; duels: DuelChoice[] }
   | { t: 'worn'; entry: HistoryEntry; rowId: string };
 
-type QueuedOp = Op & { tries: number };
+type QueuedOp = Op & { tries: number; qid: string };
 
 const queueKey = (userId: string) => `dressing-ai:queue:${userId}`;
 const MAX_TRIES = 6;
@@ -171,6 +171,17 @@ async function readQueue(userId: string): Promise<QueuedOp[]> {
   try { return JSON.parse((await AsyncStorage.getItem(queueKey(userId))) ?? '[]'); } catch { return []; }
 }
 const writeQueue = (userId: string, q: QueuedOp[]) => AsyncStorage.setItem(queueKey(userId), JSON.stringify(q)).catch(() => {});
+
+// Toutes les lectures/écritures de la file passent l'une après l'autre (sinon deux changements
+// enregistrés au même moment pourraient s'écraser).
+let lock: Promise<unknown> = Promise.resolve();
+function withLock<T>(fn: () => Promise<T>): Promise<T> {
+  const next = lock.then(fn, fn);
+  lock = next.catch(() => undefined);
+  return next;
+}
+const editQueue = (userId: string, edit: (q: QueuedOp[]) => QueuedOp[]) =>
+  withLock(async () => { const q = edit(await readQueue(userId)); await writeQueue(userId, q); return q; });
 
 /** Envoie une photo locale dans le bucket privé : garments/<utilisateur>/<vêtement>.jpg */
 export async function uploadPhoto(userId: string, garmentId: string, localUri: string): Promise<string> {
@@ -232,36 +243,31 @@ const isUuid = (s: string) => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-
 
 let flushing: Promise<boolean> | null = null;
 
-/** Envoie la file d'attente. Renvoie true si tout est parti. */
+/** Envoie la file d'attente, dans l'ordre. Renvoie true si tout est parti. */
 export function flush(userId: string): Promise<boolean> {
   if (flushing) return flushing;
   flushing = (async () => {
-    let q = await readQueue(userId);
-    while (q.length) {
-      const [op, ...rest] = q;
+    for (;;) {
+      const head = (await withLock(() => readQueue(userId)))[0];
+      if (!head) return true;
       try {
-        await run(userId, op);
-        q = rest;
+        await run(userId, head);
+        await editQueue(userId, (q) => q.filter((x) => x.qid !== head.qid));
       } catch {
-        op.tries += 1;
-        q = op.tries >= MAX_TRIES ? rest : [op, ...rest];
-        await writeQueue(userId, q);
-        if (op.tries < MAX_TRIES) return false; // réseau absent : on réessaiera plus tard
-        continue;
+        const giveUp = head.tries + 1 >= MAX_TRIES;
+        await editQueue(userId, (q) => (giveUp ? q.filter((x) => x.qid !== head.qid) : q.map((x) => (x.qid === head.qid ? { ...x, tries: x.tries + 1 } : x))));
+        if (!giveUp) return false; // réseau absent : on réessaiera plus tard
       }
-      await writeQueue(userId, q);
     }
-    return true;
   })().finally(() => { flushing = null; });
   return flushing;
 }
 
 /** Ajoute un changement à la file (en remplaçant une version plus ancienne du même) puis l'envoie. */
 export async function enqueue(userId: string, op: Op): Promise<void> {
-  if (flushing) await flushing.catch(() => false);
   const key = opKey(op);
-  const q = (await readQueue(userId)).filter((x) => opKey(x) !== key);
-  q.push({ ...op, tries: 0 });
-  await writeQueue(userId, q);
+  const qid = `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+  await editQueue(userId, (q) => [...q.filter((x) => opKey(x) !== key), { ...op, tries: 0, qid }]);
+  if (flushing) await flushing.catch(() => false); // un envoi en cours reprendra la file depuis le début
   flush(userId).catch(() => {});
 }

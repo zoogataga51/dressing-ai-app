@@ -96,3 +96,10 @@ Fonction morning-looks + pg_cron toutes les 15 min (migration 0004) : prépare l
 l'heure de notification (fuseau envoyé par le téléphone, météo serveur Open-Meteo, coordonnées gardées).
 Testé avec un compte temporaire à Lyon : 3 looks avec la vraie météo, 2e passage ignoré, compte supprimé.
 Noms de looks : pièces choisies avant le nom + détection des noms trompeurs (« trench » sans trench).
+
+## 2026-11-23 — [cloud] Relecture du code et test d'affichage
+2 bugs corrigés dans la synchro : réponses écrasées par une version périmée en fin de questionnaire/duels, et
+file d'attente qui pouvait perdre un changement (verrou ajouté). Test complet dans un navigateur (Playwright,
+mode web temporaire) : accueil → connexion → questionnaire Homme (sans voile/talons) → duels → look du jour →
+profil → abonnement → confidentialité, aucune erreur de notre code. Démo Homme : voile retiré de la garde-robe
+d'exemple. Script : scripts/smoke-web/smoke.js.

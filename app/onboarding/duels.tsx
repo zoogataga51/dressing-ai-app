@@ -65,7 +65,8 @@ export default function DuelsScreen() {
     completeOnboarding();
     track('onboarding_done', { styles });
     scheduleMorningNotification(profile.notificationTime, profile.firstName).catch(() => {});
-    router.replace(redo ? '/(tabs)/profil' : '/ajout?onboarding=1');
+    if (redo) router.dismissTo('/(tabs)/profil'); // retour au Profil, sans laisser le questionnaire derrière
+    else router.replace('/ajout?onboarding=1');
   };
 
   if (done) {
