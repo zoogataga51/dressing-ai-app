@@ -124,3 +124,8 @@ rappel sur l'écran du jour dès 5 pièces) lie un e-mail sans changer de compte
 Le fondateur a commandé dressingai.fr chez OVH (commande 263916368, 5,99 € TTC la 1re année, puis 7,79 €/an) avec
 DNSSEC, e-mail Zimbra Starter et hébergement gratuit 100 Mo (pour les pages CGU/confidentialité). Paiement en cours
 de validation. Prochaine étape : compte Resend + entrées DNS, puis SMTP dans Supabase.
+
+## 2026-11-23 — [cloud] E-mails : domaine validé chez Resend
+Clé Resend enregistrée en secret réseau (api.resend.com). Domaine dressingai.fr déclaré (région UE), 5 entrées DNS
+ajoutées par le fondateur chez OVH (docs/DNS.md), DKIM + SPF vérifiés. E-mail de test envoyé depuis
+noreply@dressingai.fr vers l'adresse du projet. Reste : SMTP dans Supabase (fondateur), puis modèles d'e-mail.
