@@ -103,3 +103,8 @@ file d'attente qui pouvait perdre un changement (verrou ajouté). Test complet d
 mode web temporaire) : accueil → connexion → questionnaire Homme (sans voile/talons) → duels → look du jour →
 profil → abonnement → confidentialité, aucune erreur de notre code. Démo Homme : voile retiré de la garde-robe
 d'exemple. Script : scripts/smoke-web/smoke.js.
+
+## 2026-11-23 — [cloud] Moteur de secours amélioré
+Moteur par règles (démo, hors ligne, IA en panne) aligné sur l'IA : cohérence de formalité entre les pièces,
+humeur respectée (pas de cargo un jour chic), voile dans chaque tenue pour qui le porte, pas de short si jambes
+couvertes. Testé sur la garde-robe de démo.

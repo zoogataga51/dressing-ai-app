@@ -10,7 +10,8 @@
  *  - adaptée à la météo (chaleur des pièces) ;
  *  - pas de pièce portée récemment ;
  *  - accord des couleurs (neutres + une seule couleur forte) ;
- *  - cohérence du niveau d'habillé selon l'humeur.
+ *  - cohérence du niveau d'habillé selon l'humeur et entre les pièces (pas de mocassins habillés avec un sweat) ;
+ *  - préférences de couverture respectées (voile dans chaque tenue, jambes couvertes).
  */
 import { luminance } from './color';
 import type { Garment, Mood, Outfit, Weather } from '@/types';
@@ -81,18 +82,38 @@ const TIPS = [
   'Un seul point de couleur par tenue, le reste en neutres : c’est la règle la plus sûre.',
 ];
 
+export type EnginePrefs = { wearsHijab?: boolean; coverLegs?: boolean };
+
+/** Préférences utiles au moteur, tirées des réponses au questionnaire. */
+export function prefsFromAnswers(answers: Record<string, string[]>): EnginePrefs {
+  const coverage = answers['coverage'] ?? [];
+  return { wearsHijab: coverage.includes('hijab') || (answers['accessories'] ?? []).includes('hijab'), coverLegs: coverage.includes('legs') };
+}
+
+const isVeil = (g: Garment) => /voile|hijab/i.test(g.subtype);
+const SHORT_BOTTOM = /short|bermuda|mini/i;
+/** Niveau d'habillé de la base (bas ou robe) : c'est lui qui donne le ton. */
+const baseFormality = (base: Garment[]) => (base.find((p) => p.category === 'bottom' || p.category === 'dress') ?? base[0]).formality;
+const fits = (g: Garment, level: number) => Math.abs(g.formality - level) <= 1;
+
 /** Compose jusqu'à `count` looks différents à partir de la garde-robe. */
-export function generateOutfits(wardrobe: Garment[], weather: Weather, mood: Mood, count = 3): Outfit[] {
+export function generateOutfits(wardrobe: Garment[], weather: Weather, mood: Mood, count = 3, prefs: EnginePrefs = {}): Outfit[] {
   const ctx = { mood, tempC: weather.tempC };
+  const allowed = wardrobe.filter((g) => !(prefs.coverLegs && (g.category === 'bottom' || g.category === 'dress') && SHORT_BOTTOM.test(`${g.subtype} ${g.label}`)));
   const by = (cat: Garment['category']) =>
-    wardrobe.filter((g) => g.category === cat).map((g) => ({ g, s: scoreGarment(g, ctx) })).sort((a, b) => b.s - a.s).map((x) => x.g);
+    allowed.filter((g) => g.category === cat).map((g) => ({ g, s: scoreGarment(g, ctx) })).sort((a, b) => b.s - a.s).map((x) => x.g);
 
   const tops = by('top'); const bottoms = by('bottom'); const dresses = by('dress');
-  const shoes = by('shoes'); const outers = by('outer'); const accs = by('accessory');
+  const shoes = by('shoes'); const outers = by('outer');
+  const veils = by('accessory').filter(isVeil);
+  const accs = by('accessory').filter((a) => !isVeil(a));
   const needsOuter = weather.tempC <= 15 || weather.condition === 'rain';
 
   const candidates: Garment[][] = [];
-  for (const top of tops.slice(0, 4)) for (const bottom of bottoms.slice(0, 4)) candidates.push([top, bottom]);
+  for (const top of tops.slice(0, 4)) for (const bottom of bottoms.slice(0, 4)) {
+    if (top.formality - bottom.formality >= 2 || bottom.formality - top.formality >= 2) continue; // chemise soie + jogging : non
+    candidates.push([top, bottom]);
+  }
   for (const dress of dresses.slice(0, 3)) candidates.push([dress]);
 
   const results: Outfit[] = [];
@@ -100,17 +121,28 @@ export function generateOutfits(wardrobe: Garment[], weather: Weather, mood: Moo
   for (const base of candidates) {
     if (results.length >= count) break;
     if (base.some((p) => used.has(p.id))) continue; // looks vraiment différents entre eux
-    const shoe = shoes.find((s) => colorsWork([...base, s]));
+    const level = baseFormality(base);
+    // L'humeur passe avant la variété : pas de cargo un jour « chic », pas de tailleur un jour « sportif »
+    // (sauf s'il n'y a rien d'autre à proposer).
+    if (results.length && ((mood === 'chic' && level < 2) || (mood === 'sporty' && level > 2))) continue;
+    const shoe = shoes.find((x) => fits(x, level) && colorsWork([...base, x])) ?? shoes.find((x) => colorsWork([...base, x]));
     if (!shoe) continue;
     const pieces = [...base, shoe];
     if (needsOuter) {
-      const outer = outers.find((o) => !used.has(o.id) && colorsWork([...pieces, o]));
+      // Par temps froid, la chaleur prime : une doudoune sur une tenue habillée vaut mieux que rien.
+      const outer = outers.find((o) => !used.has(o.id) && fits(o, level) && colorsWork([...pieces, o]))
+        ?? outers.find((o) => !used.has(o.id) && colorsWork([...pieces, o]));
       if (outer) pieces.push(outer);
     }
-    const acc = accs.find((a) => !used.has(a.id) && colorsWork([...pieces, a]));
-    if (acc && Math.random() > 0.5) pieces.push(acc);
-    if (!colorsWork(pieces)) continue;
-    pieces.forEach((p) => used.add(p.id));
+    if (prefs.wearsHijab && veils.length) {
+      // Le voile est dans chaque tenue : on choisit celui qui s'accorde le mieux, quitte à le reprendre.
+      pieces.push(veils.find((v) => colorsWork([...pieces, v])) ?? veils[0]);
+    } else {
+      const acc = accs.find((a) => !used.has(a.id) && fits(a, level) && !(mood === 'chic' && a.formality < 2) && colorsWork([...pieces, a]));
+      if (acc && Math.random() > 0.5) pieces.push(acc);
+    }
+    if (!colorsWork(pieces.filter((p) => !isVeil(p)))) continue;
+    pieces.forEach((p) => { if (!isVeil(p)) used.add(p.id); });
     const i = results.length;
     results.push({
       id: `gen-${Date.now()}-${i}`,
@@ -118,6 +150,7 @@ export function generateOutfits(wardrobe: Garment[], weather: Weather, mood: Moo
       vibe: needsOuter ? `Pensé pour ${weather.tempC}° à ${weather.city}` : 'Léger et facile pour aujourd’hui',
       garmentIds: pieces.map((p) => p.id),
       tip: TIPS[(new Date().getDate() + i) % TIPS.length],
+      source: 'rules',
     });
   }
   return results;

@@ -17,7 +17,7 @@ import { fetchAiOutfits } from '@/lib/ai';
 import { track } from '@/lib/analytics';
 import { supabase } from '@/lib/supabase';
 import { localDate } from '@/lib/date';
-import { generateOutfits } from '@/lib/outfitEngine';
+import { generateOutfits, prefsFromAnswers } from '@/lib/outfitEngine';
 import { getTodayWeather } from '@/lib/weather';
 import { useStore } from '@/state/AppStore';
 import { useAuth } from '@/state/AuthStore';
@@ -115,7 +115,7 @@ export default function TodayScreen() {
   const today = localDate();
   const wornToday = history.find((h) => h.date === today);
 
-  const ruleOutfits = useMemo(() => generateOutfits(wardrobe, weather, mood, 3), [mood, wardrobe.length, weather.tempC, weather.condition]); // eslint-disable-line react-hooks/exhaustive-deps
+  const ruleOutfits = useMemo(() => generateOutfits(wardrobe, weather, mood, 3, prefsFromAnswers(profile.answers)), [mood, wardrobe.length, weather.tempC, weather.condition, profile.answers]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Avec un compte : looks composés par l'IA (gardés en mémoire par humeur). Sinon, ou en cas d'échec : moteur par règles.
   const aiKey = `${today}:${mood}`;
