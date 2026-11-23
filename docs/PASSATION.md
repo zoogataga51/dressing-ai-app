@@ -37,6 +37,23 @@ puis les dernières entrées de `docs/JOURNAL.md`.
   à revoir. Avant le lancement : offre payante obligatoire (photos des utilisateurs, RGPD).
 - PC du fondateur (Windows) : dépôt cloné dans Documents\dressing-ai-app, clé Gemini dans .env.local.
 
+## Environnement cloud « Dressing AI » (à partir du 2026-11-23)
+- Accès Internet complet. Secrets réseau injectés par un proxy (Claude ne voit jamais les clés) :
+  - `api.supabase.com` : en-tête `Authorization: Bearer <jeton>` (jeton « claude-cloud », accès complet limité au
+    projet dressing-ai). Utiliser l'API Management directement (curl) : SQL via
+    `POST /v1/projects/syitvnkpdzeapvvekbzk/database/query`, déploiement des Edge Functions via l'API.
+    La CLI Supabase exige une variable SUPABASE_ACCESS_TOKEN : si elle refuse, passer par l'API.
+  - `generativelanguage.googleapis.com` : en-tête `x-goog-api-key` (clé du projet Google « dressing-ai »,
+    format récent commençant par « AQ. » ; si l'appel échoue, le signaler au fondateur avec la correction exacte).
+- Référence du projet Supabase : syitvnkpdzeapvvekbzk.
+- La session sur le PC du fondateur n'est plus nécessaire pour le réseau. Cette session cloud est désormais
+  l'unique interlocutrice du fondateur pour le développement.
+- Pour les tests sur téléphone, privilégier une solution qui ne demande pas le PC (EAS Update / build de
+  développement via le compte Expo moha.del51, si possible sans paiement).
+
+## Retours du fondateur à traiter
+- Le questionnaire propose robes et voile à un homme : adapter au rayon choisi (à faire en premier).
+
 ## Fait
 Interface complète (onglets, inscription, ajout photo, fiche vêtement, historique, profil, abonnement), thème,
 notifications locales, météo Open-Meteo, moteur de looks par règles, schéma Supabase + RLS, fonction serveur
