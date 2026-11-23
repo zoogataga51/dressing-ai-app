@@ -27,7 +27,9 @@ export type Garment = {
   seasons: Season[];
   warmth: Warmth;
   formality: 1 | 2 | 3; // 1 décontracté → 3 habillé
-  imageUrl?: string; // photo détourée (Supabase Storage)
+  imageUrl?: string; // photo à afficher (lien temporaire Supabase Storage, ou fichier local)
+  photoPath?: string; // chemin de la photo d'origine dans le bucket « garments »
+  cutoutPath?: string; // chemin de la photo détourée dans le bucket
   lastWornAt?: string; // date ISO
   wearCount: number;
 };

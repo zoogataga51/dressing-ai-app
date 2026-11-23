@@ -53,3 +53,11 @@ Gemini OK via secret réseau : gemini-3.5-flash et gemini-3.5-flash-lite répond
 Options filtrées selon le rayon : Homme ne voit plus voile, talons, ballerines, robe, décolleté ; libellés accordés
 (Élégante / Élégant, « Élégant·e » pour Les deux). Réponses nettoyées si le rayon change. Duels « Les deux » :
 alternance femme/homme. tsc + export iOS OK.
+
+## 2026-11-23 — [cloud] Connexion par e-mail et synchronisation Supabase
+Écran connexion (code 6 chiffres ou lien), mode démo, déconnexion, suppression du compte (fonction
+delete-account déployée via l'API). Données synchronisées avec file d'attente hors ligne ; nouveau compte =
+garde-robe vide. Migration 0002 exécutée (looks « rules » insérables par l'appli, remplacement de photo).
+RLS testée en SQL (2 faux comptes, transaction annulée) : chacun ne voit que ses données. Réglages Auth : code
+6 chiffres, 15 min, liens dressingai:// et exp:// autorisés. BLOCAGE : modèles d'e-mail non modifiables sans SMTP
+perso (offre gratuite) → l'e-mail contient un lien, pas de code ; envoi limité aux membres de l'équipe, 2/h.

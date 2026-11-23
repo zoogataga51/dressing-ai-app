@@ -1,11 +1,19 @@
 import { Redirect } from 'expo-router';
 import { useEffect } from 'react';
 import { track } from '@/lib/analytics';
+import { useAuth } from '@/state/AuthStore';
 import { useStore } from '@/state/AppStore';
 
-/** Point d'entrée : inscription si c'est la première fois, sinon le look du jour. */
+/**
+ * Point d'entrée :
+ *  - connecté ou en démo, profil terminé → look du jour ;
+ *  - connecté ou en démo, profil à faire → questionnaire ;
+ *  - sinon → accueil (création de compte).
+ */
 export default function Index() {
+  const { userId, demo } = useAuth();
   const { profile } = useStore();
   useEffect(() => { track('app_open'); }, []);
-  return <Redirect href={profile.onboarded ? '/(tabs)' : '/onboarding'} />;
+  if (!userId && !demo) return <Redirect href="/onboarding" />;
+  return <Redirect href={profile.onboarded ? '/(tabs)' : '/onboarding/questionnaire'} />;
 }

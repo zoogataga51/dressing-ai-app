@@ -12,7 +12,7 @@ import { Icon } from '@/components/Icon';
 import { Button, Chip, IconButton, ProgressBar, Screen, Sticker } from '@/components/ui';
 import { analyzeGarment, AI_ENABLED, type GarmentGuess } from '@/lib/ai';
 import { track } from '@/lib/analytics';
-import { useStore } from '@/state/AppStore';
+import { newId, useStore } from '@/state/AppStore';
 import { useTheme } from '@/theme/ThemeProvider';
 import { fonts, motion } from '@/theme/tokens';
 import { CATEGORY_OPTIONS as CATEGORIES, COLOR_OPTIONS as COLORS, FIT_OPTIONS as FITS, SEASON_OPTIONS as SEASONS } from '@/data/garmentOptions';
@@ -66,7 +66,7 @@ export default function AddGarmentScreen() {
   const save = () => {
     if (!guess || !photo) return;
     const label = `${guess.subtype} ${guess.colorName.toLowerCase()}`;
-    addGarment({ id: `g-${Date.now()}`, ...guess, label, imageUrl: guess.cutoutUrl ?? photo, wearCount: 0 });
+    addGarment({ id: newId(), ...guess, label, imageUrl: guess.cutoutUrl ?? photo, wearCount: 0 });
     setAdded((n) => n + 1);
     track('garment_added', { category: guess.category, onboarding: inOnboarding });
     setPhoto(null);

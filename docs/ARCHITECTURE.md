@@ -23,11 +23,27 @@ modifier ce fichier.
 
 ## Parcours
 
-1. `onboarding/index` : accueil (la connexion Supabase Auth se branchera ici)
+1. `onboarding/index` : accueil → `onboarding/connexion` (e-mail + code à 6 chiffres, ou lien de l'e-mail),
+   « J'ai déjà un compte », ou « Mode démo » (garde-robe d'exemple, rien n'est envoyé)
 2. `onboarding/questionnaire` : une question par écran (`src/data/questionnaire.ts`)
 3. `onboarding/duels` : 10 duels de looks → styles préférés (`src/data/duels.ts`)
 4. `ajout?onboarding=1` : 10 premières pièces, puis premier look
 5. Onglets
+
+## Comptes et synchronisation
+
+- `src/state/AuthStore.tsx` : session Supabase Auth (code e-mail via `signInWithOtp` / `verifyOtp`,
+  lien `dressingai://connexion` ou `exp://…/--/connexion` dans Expo Go), mode démo.
+- `src/state/AppStore.tsx` : copie locale par compte (`dressing-ai:state:<id>`), démo dans `dressing-ai:state:v1`.
+  Un nouveau compte démarre avec une garde-robe vide.
+- `src/lib/sync.ts` : chaque changement part dans une file d'attente (gardée sur le téléphone) puis vers la base ;
+  au démarrage : on vide la file, puis on recharge tout depuis la base (la base fait foi).
+  Photos : `garments/<id utilisateur>/<id vêtement>.jpg`, affichées par liens temporaires (30 jours).
+  Vêtement supprimé = archivé (l'historique garde ses pièces). Looks portés = table `outfits` (statut `worn`).
+- `supabase/functions/delete-account` : suppression définitive (photos + compte, cascade en base).
+- E-mails de connexion : le serveur d'envoi gratuit de Supabase n'accepte que les membres de l'équipe et
+  2 e-mails/heure, et interdit de personnaliser le modèle (donc pas de code dans l'e-mail, seulement le lien).
+  Avant la bêta : brancher un SMTP (nom de domaine + Resend gratuit), puis mettre `{{ .Token }}` dans les modèles.
 
 ## Génération des looks
 

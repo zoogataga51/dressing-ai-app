@@ -59,12 +59,13 @@ export default function DuelsScreen() {
   };
 
   const finish = () => {
+    const redo = profile.onboarded; // questionnaire refait depuis le Profil
     setDuels(choices);
     setAnswers({ ...profile.answers, styles });
     completeOnboarding();
     track('onboarding_done', { styles });
     scheduleMorningNotification(profile.notificationTime, profile.firstName).catch(() => {});
-    router.replace('/ajout?onboarding=1');
+    router.replace(redo ? '/(tabs)/profil' : '/ajout?onboarding=1');
   };
 
   if (done) {

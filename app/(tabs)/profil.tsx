@@ -9,7 +9,9 @@ import { Button, Card, Chip, Row, Screen } from '@/components/ui';
 import { scheduleMorningNotification } from '@/lib/notifications';
 import { track } from '@/lib/analytics';
 import { STYLE_OPTIONS_BY_ID } from '@/data/questionnaire';
+import { supabase } from '@/lib/supabase';
 import { useStore } from '@/state/AppStore';
+import { useAuth } from '@/state/AuthStore';
 import { useTheme } from '@/theme/ThemeProvider';
 import { fonts, motion, space } from '@/theme/tokens';
 
@@ -39,6 +41,26 @@ export default function ProfileScreen() {
   const { colors, isDark, setMode } = useTheme();
   const router = useRouter();
   const { profile, resetAll, updateProfile } = useStore();
+  const auth = useAuth();
+  const [deleting, setDeleting] = useState(false);
+
+  const leave = async () => {
+    await resetAll(); // efface la copie de ce téléphone
+    await auth.signOut();
+    router.replace('/onboarding');
+  };
+
+  const deleteAccount = async () => {
+    if (!auth.userId) { await leave(); return; }
+    setDeleting(true);
+    const { error } = await supabase!.functions.invoke('delete-account', { method: 'POST' });
+    setDeleting(false);
+    if (error) {
+      Alert.alert('Suppression impossible', 'Vérifie ta connexion Internet et réessaie. Si ça continue, écris-nous : dressing.ai.app@outlook.com');
+      return;
+    }
+    await leave();
+  };
   const [sheet, setSheet] = useState<'city' | 'time' | null>(null);
   const [cityDraft, setCityDraft] = useState(profile.city);
 
@@ -96,13 +118,31 @@ export default function ProfileScreen() {
         </Section>
 
         <Section title="Compte et données" delay={240}>
-          <Row label="Exporter mes données" onPress={() => Alert.alert('Bientôt', 'L’export de tes données arrive avec la connexion au compte.')} />
-          <Row label="Se déconnecter" onPress={() => {}} />
-          <Row label="Supprimer mon compte" danger last onPress={() =>
-            Alert.alert('Supprimer ton compte ?', 'Ta garde-robe, tes photos et ton historique seront définitivement effacés.', [
-              { text: 'Annuler', style: 'cancel' },
-              { text: 'Supprimer', style: 'destructive', onPress: async () => { await resetAll(); router.replace('/onboarding'); } },
-            ])} />
+          {auth.userId ? (
+            <>
+              <Row label="Adresse e-mail" value={auth.email ?? ''} />
+              <Row label="Exporter mes données" onPress={() => Alert.alert('Bientôt', 'L’export de tes données arrive très vite. En attendant, écris-nous : dressing.ai.app@outlook.com')} />
+              <Row label="Se déconnecter" onPress={() =>
+                Alert.alert('Se déconnecter ?', 'Ta garde-robe reste sauvegardée sur ton compte.', [
+                  { text: 'Annuler', style: 'cancel' },
+                  { text: 'Se déconnecter', onPress: () => { track('signed_out'); leave(); } },
+                ])} />
+              <Row label={deleting ? 'Suppression en cours…' : 'Supprimer mon compte'} danger last onPress={() => !deleting &&
+                Alert.alert('Supprimer ton compte ?', 'Ta garde-robe, tes photos et ton historique seront définitivement effacés. C’est irréversible.', [
+                  { text: 'Annuler', style: 'cancel' },
+                  { text: 'Supprimer', style: 'destructive', onPress: deleteAccount },
+                ])} />
+            </>
+          ) : (
+            <>
+              <Row label="Créer mon compte" value="Sauvegarder ma garde-robe" onPress={() => router.push('/onboarding/connexion')} />
+              <Row label="Quitter le mode démo" danger last onPress={() =>
+                Alert.alert('Quitter le mode démo ?', 'Les données d’exemple de ce téléphone seront effacées.', [
+                  { text: 'Annuler', style: 'cancel' },
+                  { text: 'Quitter', style: 'destructive', onPress: leave },
+                ])} />
+            </>
+          )}
         </Section>
 
         <AppText variant="tiny" muted style={{ textAlign: 'center', marginTop: space.sm }}>Dressing AI · version 0.1 (bêta)</AppText>

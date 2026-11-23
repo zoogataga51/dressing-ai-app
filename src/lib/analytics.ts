@@ -3,14 +3,18 @@
  * rétention J7/J30, conversion essai → abonné, abandon à chaque étape de l'inscription,
  * looks portés, etc.
  *
- * Aujourd'hui : gardés sur le téléphone (les 500 derniers). Quand Supabase sera branché,
- * ils seront envoyés dans la table `events` (voir supabase/migrations/0001_init.sql).
+ * Gardés sur le téléphone (les 500 derniers) et, avec un compte, envoyés dans la table `events`
+ * (voir supabase/migrations/0001_init.sql).
  */
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { supabase } from './supabase';
 
 export type EventName =
   | 'app_open'
+  | 'auth_code_sent'
+  | 'auth_done'
+  | 'demo_started'
+  | 'signed_out'
   | 'onboarding_question'
   | 'onboarding_duel'
   | 'onboarding_done'
@@ -31,8 +35,10 @@ const MAX = 500;
 export function track(name: EventName, props: Record<string, unknown> = {}): void {
   const event: Event = { name, props, at: new Date().toISOString() };
   if (supabase) {
-    supabase.auth.getUser().then(({ data }) => {
-      if (data.user) supabase?.from('events').insert({ user_id: data.user.id, name, props }).then(() => {});
+    // getSession lit la session gardée sur le téléphone (pas d'appel réseau en plus).
+    supabase.auth.getSession().then(({ data }) => {
+      const uid = data.session?.user.id;
+      if (uid) supabase?.from('events').insert({ user_id: uid, name, props }).then(() => {}, () => {});
     }).catch(() => {});
   }
   AsyncStorage.getItem(KEY)

@@ -2,17 +2,21 @@ import { useRouter } from 'expo-router';
 import { View } from 'react-native';
 import Animated, { FadeInDown, ZoomIn } from 'react-native-reanimated';
 import { AppText } from '@/components/AppText';
+import { PressableScale } from '@/components/PressableScale';
 import { Button, Screen, Sticker } from '@/components/ui';
+import { track } from '@/lib/analytics';
+import { useAuth } from '@/state/AuthStore';
 import { useTheme } from '@/theme/ThemeProvider';
 import { motion } from '@/theme/tokens';
 
 /**
- * Écran d'accueil. La création de compte (e-mail, Apple, Google) se branchera ici
- * avec Supabase Auth ; en attendant, on passe directement au questionnaire.
+ * Écran d'accueil : création de compte par e-mail (Apple et Google viendront avec les comptes
+ * développeur payants), connexion à un compte existant, ou découverte en mode démo.
  */
 export default function Welcome() {
   const { colors } = useTheme();
   const router = useRouter();
+  const { setDemo } = useAuth();
   return (
     <Screen edges={['top', 'bottom']}>
       <View style={{ flex: 1, paddingHorizontal: 24, paddingBottom: 16, justifyContent: 'space-between' }}>
@@ -37,8 +41,17 @@ export default function Welcome() {
         </View>
 
         <Animated.View entering={FadeInDown.delay(300).duration(motion.slow)} style={{ gap: 10 }}>
-          <Button label="Créer mon profil de style" onPress={() => router.push('/onboarding/questionnaire')} />
+          <Button label="Créer mon profil de style" onPress={() => router.push('/onboarding/connexion')} />
           <AppText variant="small" muted style={{ textAlign: 'center' }}>Environ 3 minutes · 7 jours d’essai gratuit</AppText>
+          <View style={{ flexDirection: 'row', justifyContent: 'center', gap: 4, marginTop: 6 }}>
+            <PressableScale onPress={() => router.push('/onboarding/connexion?mode=login')} style={{ paddingVertical: 8, paddingHorizontal: 6 }}>
+              <AppText variant="bodyStrong" color={colors.primary}>J’ai déjà un compte</AppText>
+            </PressableScale>
+            <AppText muted style={{ paddingVertical: 8 }}>·</AppText>
+            <PressableScale onPress={() => { setDemo(true); track('demo_started'); router.replace('/'); }} style={{ paddingVertical: 8, paddingHorizontal: 6 }}>
+              <AppText variant="bodyStrong" muted>Mode démo</AppText>
+            </PressableScale>
+          </View>
         </Animated.View>
       </View>
     </Screen>

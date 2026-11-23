@@ -11,6 +11,7 @@ import { Button, Chip, IconButton, Screen, Sticker } from '@/components/ui';
 import { MOCK_WEATHER } from '@/data/mock';
 import { outfitTint, readableMutedOn, readableOn } from '@/lib/color';
 import { track } from '@/lib/analytics';
+import { localDate } from '@/lib/date';
 import { generateOutfits } from '@/lib/outfitEngine';
 import { getTodayWeather } from '@/lib/weather';
 import { useStore } from '@/state/AppStore';
@@ -83,7 +84,7 @@ export default function TodayScreen() {
 
   const [mood, setMood] = useState<Mood>('free');
   const [active, setActive] = useState(0);
-  const today = new Date().toISOString().slice(0, 10);
+  const today = localDate();
   const wornToday = history.find((h) => h.date === today);
 
   const outfits = useMemo(() => generateOutfits(wardrobe, weather, mood, 3), [mood, wardrobe.length, weather.tempC, weather.condition]); // eslint-disable-line react-hooks/exhaustive-deps
