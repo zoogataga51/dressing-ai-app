@@ -182,3 +182,9 @@ patienter les nouveaux expéditeurs / boîte en cours d'activation), Resend rée
 dressingai.fr, /cgu.html et /confidentialite.html en ligne (déposés par le fondateur avec FileZilla en SFTP ; l'Explorateur
 FTP web d'OVH n'existe plus ; le « index.html » d'OVH était un lien symbolique à supprimer). Vérifié : HTTP 200,
 contact@dressingai.fr présent. Toutes les étapes gratuites sont faites ; restent Apple (99 $) et Google (25 $) pour la bêta.
+
+## 2026-11-23 — [cloud] Images des duels générées
+40 images (20 duels femme/homme) générées avec gemini-3.1-flash-image (~3 c€ l'image, ~1,4 € au total) :
+tenues à plat sur fond papier, sans personne ni logo ; abaya et qamis vérifiés à la main. Réduites en 480×640
+(1,3 Mo au total) dans assets/duels/, branchées via src/data/duelImages.ts (généré). Scripts : scripts/duel-images/
+(generate.ts puis resize.py). Mise à jour 0.2 publiée.

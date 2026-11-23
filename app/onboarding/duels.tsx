@@ -23,8 +23,8 @@ function LookCard({ look, onPress, side }: { look: DuelLook; onPress: () => void
     <Animated.View entering={Enter.duration(motion.slow).springify()} style={{ flex: 1 }}>
       <PressableScale accessibilityRole="button" accessibilityLabel={`Je préfère : ${look.title}`} haptic="medium" pressedScale={0.94} onPress={onPress}
         style={{ flex: 1, borderRadius: 24, backgroundColor: tint, padding: 12, gap: 10 }}>
-        {look.imageUrl ? (
-          <Image source={{ uri: look.imageUrl }} style={{ flex: 1, borderRadius: 16 }} contentFit="cover" transition={250} />
+        {look.image ? (
+          <Image source={look.image} style={{ flex: 1, borderRadius: 16 }} contentFit="cover" transition={250} />
         ) : (
           <View style={{ flex: 1, gap: 6 }}>
             {look.pieces.map((p) => (

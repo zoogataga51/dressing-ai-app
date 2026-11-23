@@ -1,9 +1,8 @@
 /**
  * Duels de looks (inscription) : la personne choisit entre deux looks, 10 fois.
  *
- * Les images seront générées par IA (aucune vraie personne, aucun visuel copié) :
- * chaque look porte une `imagePrompt` prête à l'emploi. En attendant, l'appli affiche
- * les pièces sous forme de pastilles de couleur.
+ * Les images sont générées par IA à partir des `imagePrompt` (aucune vraie personne, aucun visuel copié) :
+ * scripts/duel-images, rangées dans assets/duels/. Sans image, l'appli affiche les pièces en pastilles de couleur.
  *
  * Chaque look est étiqueté : les styles choisis donnent le profil de style de la personne.
  */
@@ -14,11 +13,13 @@ export type DuelLook = {
   pieces: { label: string; hex: string }[];
   styles: string[]; // ids de STYLE_OPTIONS
   formality: 1 | 2 | 3;
-  imageUrl?: string;
+  image?: number; // require() d'une image locale
   imagePrompt: string;
 };
 
 export type Duel = { id: string; a: DuelLook; b: DuelLook };
+
+import { DUEL_IMAGES } from './duelImages';
 
 const PROMPT_BASE =
   'Flat lay fashion photo of a complete outfit on a warm off-white paper background (#F6F3EE), soft daylight, ' +
@@ -27,6 +28,7 @@ const PROMPT_BASE =
 const look = (id: string, title: string, styles: string[], formality: 1 | 2 | 3, pieces: [string, string][], promptOutfit: string): DuelLook => ({
   id, title, styles, formality,
   pieces: pieces.map(([label, hex]) => ({ label, hex })),
+  image: DUEL_IMAGES[id],
   imagePrompt: PROMPT_BASE + promptOutfit,
 });
 
