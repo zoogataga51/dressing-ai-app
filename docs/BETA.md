@@ -22,7 +22,7 @@ Toutes les commandes : préfixer par `EXPO_TOKEN=proxy-injected` (le vrai jeton 
 
 **Test sur iPhone sans PC (Expo Go)** :
 `EXPO_TOKEN=proxy-injected npx eas-cli@27.11.0 update --channel preview --environment preview --platform ios --message "…" --non-interactive`
-puis, sur expo.dev > projet > Updates > la mise à jour > « Preview » : QR code à scanner avec l'appareil photo de
+puis QR permanent docs/qr/expo-go-beta.png (lien exp://u.expo.dev/<projet>?channel-name=preview&runtime-version=exposdk:58.0.0, toujours la dernière version), à scanner avec l'appareil photo de
 l'iPhone (Expo Go installé, connecté au compte moha.del51). `runtimeVersion` est en `sdkVersion` pour Expo Go :
 le repasser en `{"policy":"appVersion"}` au premier build TestFlight.
 

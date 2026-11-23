@@ -9,6 +9,7 @@ import { Button, IconButton, Screen } from '@/components/ui';
 import { track } from '@/lib/analytics';
 import { questionsFor, rayonOf, sanitizeAnswers, type Option, type Question } from '@/data/questionnaire';
 import { useStore } from '@/state/AppStore';
+import { useAuth } from '@/state/AuthStore';
 import { useTheme } from '@/theme/ThemeProvider';
 import { fonts, motion } from '@/theme/tokens';
 
@@ -39,6 +40,7 @@ export default function QuestionnaireScreen() {
   const { colors } = useTheme();
   const router = useRouter();
   const { profile, setAnswers, updateProfile } = useStore();
+  const auth = useAuth();
   const [step, setStep] = useState(0);
   const [answers, setLocal] = useState<Record<string, string[]>>(profile.answers);
   const [text, setText] = useState<Record<string, string>>({ firstName: profile.firstName, city: profile.city });
@@ -50,6 +52,14 @@ export default function QuestionnaireScreen() {
   const current = answers[q.id] ?? [];
   const isLast = step === QUESTIONS.length - 1;
   const canContinue = q.optional || (q.kind === 'text' ? (text[q.id] ?? '').trim().length > 0 : current.length > 0);
+
+  // Première question : retour à l'écran d'avant (Profil, si on refait le questionnaire) ou à l'accueil.
+  // Un compte sans e-mail tout juste créé et encore vide est simplement abandonné.
+  const leaveFirstStep = async () => {
+    if (router.canGoBack()) { router.back(); return; }
+    if (auth.anonymous && !profile.onboarded) await auth.signOut();
+    router.replace('/onboarding');
+  };
 
   const toggle = (id: string) => {
     let next: string[];
@@ -77,7 +87,7 @@ export default function QuestionnaireScreen() {
     <Screen edges={['top', 'bottom']}>
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }}>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 20, paddingTop: 8 }}>
-          <IconButton icon="chevronLeft" label="Question précédente" onPress={() => (step === 0 ? router.back() : setStep(step - 1))} />
+          <IconButton icon="chevronLeft" label="Question précédente" onPress={() => (step > 0 ? setStep(step - 1) : leaveFirstStep())} />
           <View style={{ flex: 1, flexDirection: 'row', gap: 3 }}>
             {QUESTIONS.map((x, i) => (
               <View key={x.id} style={{ flex: 1, height: 6, borderRadius: 3, backgroundColor: i <= step ? colors.primary : colors.chipBorder }} />

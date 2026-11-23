@@ -1,5 +1,10 @@
-import { Inter_400Regular, Inter_500Medium, Inter_600SemiBold, Inter_700Bold } from '@expo-google-fonts/inter';
-import { Syne_700Bold, Syne_800ExtraBold } from '@expo-google-fonts/syne';
+// Une importation par graisse : sinon les 23 variantes de chaque police partent dans l'appli (~4 Mo de trop).
+import { Inter_400Regular } from '@expo-google-fonts/inter/400Regular';
+import { Inter_500Medium } from '@expo-google-fonts/inter/500Medium';
+import { Inter_600SemiBold } from '@expo-google-fonts/inter/600SemiBold';
+import { Inter_700Bold } from '@expo-google-fonts/inter/700Bold';
+import { Syne_700Bold } from '@expo-google-fonts/syne/700Bold';
+import { Syne_800ExtraBold } from '@expo-google-fonts/syne/800ExtraBold';
 import { useFonts } from 'expo-font';
 import { SplashScreen, Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';

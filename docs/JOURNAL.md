@@ -135,3 +135,8 @@ Robot Expo claude-cloud (rôle Developer, organisation dressing-ai.com) en secre
 dressing-ai.com, projet EAS dressing-ai créé (id 5acb6e9b…), expo-updates installé, runtimeVersion sdkVersion
 (pour Expo Go). Mise à jour iOS publiée sur le canal preview : le fondateur peut tester sur iPhone sans PC.
 E-mail de test Resend livré mais classé en indésirables chez Outlook (domaine neuf).
+
+## 2026-11-23 — [cloud] 1er test sur iPhone sans PC : ça marche
+Le fondateur a ouvert la bêta dans Expo Go via EAS Update. Retour : flèche retour inactive sur la 1re question
+(pas d'écran derrière) → corrigé (retour accueil, compte sans e-mail vide abandonné). Polices : 6 fichiers au lieu
+de 46 (imports par graisse). Mise à jour 0.1.1 publiée ; QR permanent sur le canal preview (docs/qr/).
