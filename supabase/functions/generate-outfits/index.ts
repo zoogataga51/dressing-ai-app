@@ -21,6 +21,7 @@ const MODELS = (Deno.env.get('GEMINI_OUTFIT_MODELS') ?? 'gemini-3.5-flash-lite,g
 const MAX_PER_DAY = 4;
 const MOODS: Mood[] = ['free', 'cozy', 'chic', 'relaxed', 'sporty', 'bold'];
 const DAY = 86_400_000;
+const TRIAL_DAYS = 7; // même règle que src/lib/access.ts
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: cors });
@@ -41,6 +42,12 @@ Deno.serve(async (req) => {
   // Date du jour de la personne (envoyée par le téléphone), bornée à ±1 jour du serveur.
   const serverDay = new Date().toISOString().slice(0, 10);
   const day = /^\d{4}-\d{2}-\d{2}$/.test(body.date) && Math.abs(Date.parse(body.date) - Date.parse(serverDay)) <= DAY ? body.date : serverDay;
+
+  // 0. Essai de 7 jours (depuis l'inscription) ou abonnement Premium en cours ; sinon, plus de looks.
+  const { data: billing } = await admin.from('profiles').select('trial_started_at, premium_until, created_at').eq('id', user.id).maybeSingle();
+  const trialStart = Date.parse(billing?.trial_started_at ?? billing?.created_at ?? new Date().toISOString());
+  const premium = billing?.premium_until && Date.parse(billing.premium_until) > Date.now();
+  if (!premium && Date.now() > trialStart + TRIAL_DAYS * DAY) return json({ outfits: [], locked: true });
 
   // 1. Déjà composés aujourd'hui pour cette humeur ? On les renvoie.
   const { data: existing } = await admin.from('outfits').select('id, name, vibe, tip, garment_ids, mood, status')

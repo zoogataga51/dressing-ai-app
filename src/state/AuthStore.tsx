@@ -10,6 +10,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import type { Session } from '@supabase/supabase-js';
 import * as Linking from 'expo-linking';
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
+import { setupPurchases } from '@/lib/purchases';
 import { supabase } from '@/lib/supabase';
 
 type Result = { ok: true } | { ok: false; message: string };
@@ -81,6 +82,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   useEffect(() => { if (url) sessionFromUrl(url).catch(() => {}); }, [url]);
+  // Les achats (RevenueCat) suivent le compte connecté.
+  const uid = session?.user.id ?? null;
+  useEffect(() => { if (ready) setupPurchases(uid); }, [ready, uid]);
 
   const setDemo = useCallback((on: boolean) => {
     setDemoState(on);

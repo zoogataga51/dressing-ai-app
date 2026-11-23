@@ -12,6 +12,7 @@ import { PressableScale } from '@/components/PressableScale';
 import { Button, Chip, IconButton, Screen, Sticker } from '@/components/ui';
 import { MOCK_WEATHER } from '@/data/mock';
 import { outfitTint, readableMutedOn, readableOn } from '@/lib/color';
+import { getAccess } from '@/lib/access';
 import { fetchAiOutfits } from '@/lib/ai';
 import { track } from '@/lib/analytics';
 import { supabase } from '@/lib/supabase';
@@ -120,7 +121,9 @@ export default function TodayScreen() {
   const aiKey = `${today}:${mood}`;
   const [aiLooks, setAiLooks] = useState<Record<string, Outfit[] | null>>({});
   const [hidden, setHidden] = useState<Set<string>>(new Set());
-  const useAi = !!userId && ruleOutfits.length > 0;
+  // Fin de l'essai sans abonnement : la garde-robe reste, mais plus de looks (règle aussi vérifiée par le serveur).
+  const locked = !!userId && getAccess(profile).state === 'expired';
+  const useAi = !!userId && !locked && ruleOutfits.length > 0;
   const aiPending = useAi && !(aiKey in aiLooks);
   useEffect(() => {
     if (!useAi || !weatherReady || aiKey in aiLooks) return;
@@ -164,7 +167,16 @@ export default function TodayScreen() {
           <Sticker tone="highlight" icon={weather.condition} label={`${weather.city} · ${weather.tempC}°`} />
         </View>
 
-        {aiPending ? (
+        {locked ? (
+          <Animated.View entering={FadeInDown.duration(motion.slow)} style={{ marginHorizontal: SIDE, padding: 22, borderRadius: 28, backgroundColor: colors.inverse, gap: 12 }}>
+            <Sticker label="Essai terminé" tone="highlight" rotate={-3} style={{ alignSelf: 'flex-start' }} />
+            <AppText variant="title" color={colors.onInverse}>Tes looks t’attendent.</AppText>
+            <AppText color={colors.onInverse} style={{ opacity: 0.8 }}>
+              Tes 7 jours d’essai sont finis. Ta garde-robe reste là, bien rangée : passe à Premium pour retrouver tes looks chaque matin.
+            </AppText>
+            <Button label="Voir les offres" kind="accent" onPress={() => router.push('/abonnement')} />
+          </Animated.View>
+        ) : aiPending ? (
           <StylistLoading width={cardW} />
         ) : outfits.length === 0 && ruleOutfits.length > 0 ? (
           <View style={{ marginHorizontal: SIDE, padding: 20, borderRadius: 28, backgroundColor: colors.surface, gap: 8 }}>
@@ -197,6 +209,7 @@ export default function TodayScreen() {
           />
         )}
 
+        {locked ? null : (<>
         <View style={{ paddingHorizontal: SIDE, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
             <View style={{ flexDirection: 'row', gap: 6 }}>
@@ -249,6 +262,7 @@ export default function TodayScreen() {
             </View>
           </Animated.View>
         ) : null}
+        </>)}
       </ScrollView>
     </Screen>
   );

@@ -1,11 +1,12 @@
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
-import { Alert, ScrollView, TextInput, View } from 'react-native';
+import { Alert, Linking, ScrollView, Share, TextInput, View } from 'react-native';
 import Animated, { FadeInDown, useAnimatedStyle, withSpring, withTiming } from 'react-native-reanimated';
 import { AppText } from '@/components/AppText';
 import { PressableScale } from '@/components/PressableScale';
 import { Sheet } from '@/components/Sheet';
 import { Button, Card, Chip, Row, Screen } from '@/components/ui';
+import { getAccess } from '@/lib/access';
 import { scheduleMorningNotification } from '@/lib/notifications';
 import { track } from '@/lib/analytics';
 import { STYLE_OPTIONS_BY_ID } from '@/data/questionnaire';
@@ -40,7 +41,7 @@ function Section({ title, children, delay }: { title: string; children: React.Re
 export default function ProfileScreen() {
   const { colors, isDark, setMode } = useTheme();
   const router = useRouter();
-  const { profile, resetAll, updateProfile } = useStore();
+  const { profile, wardrobe, history, resetAll, updateProfile } = useStore();
   const auth = useAuth();
   const [deleting, setDeleting] = useState(false);
 
@@ -65,9 +66,11 @@ export default function ProfileScreen() {
   const [cityDraft, setCityDraft] = useState(profile.city);
 
   const styles = (profile.answers['styles'] ?? []).map((id) => STYLE_OPTIONS_BY_ID[id]?.label).filter(Boolean) as string[];
-  const trialDaysLeft = profile.trialStartedAt
-    ? Math.max(0, 7 - Math.floor((Date.now() - new Date(profile.trialStartedAt).getTime()) / 86_400_000))
-    : 7;
+  const access = getAccess(profile);
+  const badge = auth.demo || !auth.userId ? 'Mode démo'
+    : access.state === 'premium' ? 'Premium'
+    : access.state === 'expired' ? 'Essai terminé'
+    : `Essai gratuit · ${access.daysLeft} ${access.daysLeft > 1 ? 'jours restants' : 'jour restant'}`;
   const initial = (profile.firstName || 'Moi').charAt(0).toUpperCase();
 
   return (
@@ -83,7 +86,7 @@ export default function ProfileScreen() {
             <AppText variant="heading" style={{ fontSize: 20 }}>{profile.firstName || 'Mon compte'}</AppText>
             <View style={{ alignSelf: 'flex-start', backgroundColor: colors.highlight, borderRadius: 999, paddingHorizontal: 10, paddingVertical: 4 }}>
               <AppText variant="tiny" color={colors.onHighlight} style={{ fontFamily: 'Inter_700Bold' }}>
-                Essai gratuit · {trialDaysLeft} {trialDaysLeft > 1 ? 'jours restants' : 'jour restant'}
+                {badge}
               </AppText>
             </View>
           </View>
@@ -113,7 +116,7 @@ export default function ProfileScreen() {
         </Section>
 
         <Section title="Abonnement" delay={180}>
-          <Row label="Passer à Premium" value="Voir les offres" onPress={() => router.push('/abonnement')} />
+          <Row label={access.state === 'premium' ? 'Mon abonnement' : 'Passer à Premium'} value={access.state === 'premium' ? 'Premium' : 'Voir les offres'} onPress={() => router.push('/abonnement')} />
           <Row label="J’ai un code promo" last onPress={() => router.push('/abonnement')} />
         </Section>
 
@@ -121,7 +124,12 @@ export default function ProfileScreen() {
           {auth.userId ? (
             <>
               <Row label="Adresse e-mail" value={auth.email ?? ''} />
-              <Row label="Exporter mes données" onPress={() => Alert.alert('Bientôt', 'L’export de tes données arrive très vite. En attendant, écris-nous : dressing.ai.app@outlook.com')} />
+              <Row label="Exporter mes données" onPress={() => {
+                // Droit à la portabilité (RGPD) : une copie lisible de tout ce qu'on garde sur toi.
+                const data = { exporte_le: new Date().toISOString(), email: auth.email, profil: profile,
+                  garde_robe: wardrobe.map(({ imageUrl: _u, ...g }) => g), historique: history };
+                Share.share({ title: 'Mes données Dressing AI', message: JSON.stringify(data, null, 2) }).catch(() => {});
+              }} />
               <Row label="Se déconnecter" onPress={() =>
                 Alert.alert('Se déconnecter ?', 'Ta garde-robe reste sauvegardée sur ton compte.', [
                   { text: 'Annuler', style: 'cancel' },
@@ -143,6 +151,12 @@ export default function ProfileScreen() {
                 ])} />
             </>
           )}
+        </Section>
+
+        <Section title="Informations" delay={300}>
+          <Row label="Conditions d’utilisation" onPress={() => router.push('/legal/cgu')} />
+          <Row label="Confidentialité" onPress={() => router.push('/legal/confidentialite')} />
+          <Row label="Nous écrire" value="dressing.ai.app@outlook.com" last onPress={() => Linking.openURL('mailto:dressing.ai.app@outlook.com')} />
         </Section>
 
         <AppText variant="tiny" muted style={{ textAlign: 'center', marginTop: space.sm }}>Dressing AI · version 0.1 (bêta)</AppText>

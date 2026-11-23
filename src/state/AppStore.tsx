@@ -29,6 +29,8 @@ export type Profile = {
   answers: StyleAnswers;
   duels: DuelChoice[];
   trialStartedAt?: string;
+  /** Fin de l'abonnement Premium (tenu à jour par le serveur, jamais envoyé par l'appli). */
+  premiumUntil?: string;
 };
 
 type State = { profile: Profile; wardrobe: Garment[]; history: HistoryEntry[] };

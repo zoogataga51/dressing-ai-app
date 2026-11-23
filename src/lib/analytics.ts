@@ -26,6 +26,8 @@ export type EventName =
   | 'outfit_disliked'
   | 'mood_changed'
   | 'paywall_view'
+  | 'paywall_subscribe_tap'
+  | 'subscribed'
   | 'notification_time_set';
 
 type Event = { name: EventName; props: Record<string, unknown>; at: string };

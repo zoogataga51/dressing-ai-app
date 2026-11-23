@@ -1,28 +1,35 @@
 import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { Alert, ScrollView, View } from 'react-native';
+import { Alert, Linking, Platform, ScrollView, View } from 'react-native';
 import Animated, { FadeInDown, ZoomIn, useAnimatedStyle, withSpring, withTiming } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { AppText } from '@/components/AppText';
 import { Icon } from '@/components/Icon';
 import { PressableScale } from '@/components/PressableScale';
 import { Button } from '@/components/ui';
+import { getAccess } from '@/lib/access';
 import { track } from '@/lib/analytics';
+import { buy, getPlans, PURCHASES_ENABLED, redeemCode, restore, type Plan } from '@/lib/purchases';
+import { useStore } from '@/state/AppStore';
+import { useAuth } from '@/state/AuthStore';
 import { useTheme } from '@/theme/ThemeProvider';
 import { fonts, motion } from '@/theme/tokens';
 
 /**
- * Écran d'abonnement. Le paiement sera branché sur RevenueCat (étape 6 du plan) :
- * les prix affichés viendront alors des stores, pas de ce fichier.
+ * Écran d'abonnement. Paiement via RevenueCat (src/lib/purchases.ts) : les prix viennent des stores
+ * quand les achats sont actifs ; sinon, prix de référence.
  */
 const PLANS = [
-  { id: 'year', name: 'Annuel', sub: 'Soit 3,33 € par mois', price: '39,99 € / an', badge: '-52 %', after: 'Puis 39,99 € par an. Annulable à tout moment.' },
-  { id: 'month', name: 'Mensuel', sub: 'Sans engagement', price: '6,99 € / mois', badge: '', after: 'Puis 6,99 € par mois. Annulable à tout moment.' },
+  { id: 'year', name: 'Annuel', sub: 'Soit 3,33 € par mois', unit: '/ an', badge: '-52 %' },
+  { id: 'month', name: 'Mensuel', sub: 'Sans engagement', unit: '/ mois', badge: '' },
 ] as const;
+
+const MANAGE_URL = Platform.OS === 'ios' ? 'https://apps.apple.com/account/subscriptions' : 'https://play.google.com/store/account/subscriptions';
+const frDate = (d: Date) => d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
 
 const PERKS = ['Des looks chaque matin selon la météo', 'Des tenues adaptées à ton humeur', 'Ta garde-robe illimitée', 'Le mot du styliste tous les jours'];
 
-function PlanCard({ plan, selected, onPress }: { plan: (typeof PLANS)[number]; selected: boolean; onPress: () => void }) {
+function PlanCard({ plan, price, selected, onPress }: { plan: (typeof PLANS)[number]; price: string; selected: boolean; onPress: () => void }) {
   const { colors } = useTheme();
   const border = useAnimatedStyle(() => ({ borderColor: withTiming(selected ? colors.primary : colors.surfaceBorder, { duration: motion.base }) }), [selected, colors]);
   const radio = useAnimatedStyle(() => ({ borderWidth: withSpring(selected ? 7 : 2, motion.spring), borderColor: selected ? colors.primary : colors.track }), [selected, colors]);
@@ -41,7 +48,7 @@ function PlanCard({ plan, selected, onPress }: { plan: (typeof PLANS)[number]; s
           <AppText variant="small" muted>{plan.sub}</AppText>
         </View>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-          <AppText variant="bodyStrong">{plan.price}</AppText>
+          <AppText variant="bodyStrong">{price} {plan.unit}</AppText>
           <Animated.View style={[{ width: 22, height: 22, borderRadius: 11, backgroundColor: '#FFFFFF' }, radio]} />
         </View>
       </Animated.View>
@@ -52,9 +59,51 @@ function PlanCard({ plan, selected, onPress }: { plan: (typeof PLANS)[number]; s
 export default function PaywallScreen() {
   const { colors } = useTheme();
   const router = useRouter();
+  const { profile, updateProfile } = useStore();
+  const { userId } = useAuth();
   const [plan, setPlan] = useState<'year' | 'month'>('year');
-  const current = PLANS.find((p) => p.id === plan)!;
-  useEffect(() => { track('paywall_view'); }, []);
+  const [prices, setPrices] = useState<Plan[]>([]);
+  const [busy, setBusy] = useState(false);
+  const access = getAccess(profile);
+  const price = (id: 'year' | 'month') => prices.find((p) => p.id === id)?.price ?? (id === 'year' ? '39,99 €' : '6,99 €');
+  useEffect(() => { track('paywall_view', { state: access.state }); getPlans().then(setPrices); }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const unlocked = (until: string | null) => {
+    if (until) updateProfile({ premiumUntil: until });
+    Alert.alert('Bienvenue dans Premium !', 'Tes looks t’attendent chaque matin.', [{ text: 'Super', onPress: () => router.back() }]);
+  };
+
+  const subscribe = async () => {
+    if (!userId) {
+      Alert.alert('Crée ton compte', 'Ton abonnement doit être rattaché à un compte pour suivre ta garde-robe.', [
+        { text: 'Plus tard', style: 'cancel' }, { text: 'Créer mon compte', onPress: () => router.replace('/onboarding/connexion') },
+      ]);
+      return;
+    }
+    const chosen = prices.find((p) => p.id === plan);
+    track('paywall_subscribe_tap', { plan });
+    setBusy(true);
+    const res = chosen ? await buy(chosen) : { ok: false as const, message: 'Le paiement sera activé à la sortie sur l’App Store et Google Play.' };
+    setBusy(false);
+    if (res.ok) { track('subscribed', { plan }); unlocked(res.premiumUntil); } else if (!res.cancelled) Alert.alert('Abonnement', res.message);
+  };
+
+  const onRestore = async () => {
+    setBusy(true);
+    const res = await restore();
+    setBusy(false);
+    if (res.ok) unlocked(res.premiumUntil); else Alert.alert('Restaurer mes achats', res.message);
+  };
+
+  const onCode = async () => {
+    if (!(await redeemCode())) Alert.alert('Code promo', 'Les codes promo arrivent avec la sortie sur les stores. Garde-le précieusement !');
+  };
+
+  const cta = access.state === 'premium' ? 'Gérer mon abonnement' : access.state === 'expired' ? 'Continuer avec Premium' : 'Passer à Premium';
+  const note = access.state === 'premium'
+    ? `Tu es Premium${profile.premiumUntil && !profile.premiumUntil.startsWith('2999') ? ` jusqu’au ${frDate(new Date(profile.premiumUntil))}` : ''}. Merci !`
+    : `${plan === 'year' ? `${price('year')} par an` : `${price('month')} par mois`}, renouvelé automatiquement. Annulable à tout moment dans les réglages de ton compte ${Platform.OS === 'ios' ? 'Apple' : 'Google'}, au moins 24 h avant le renouvellement.`
+      + (access.state === 'trial' && access.trialEndsAt ? ` Ton essai gratuit continue jusqu’au ${frDate(access.trialEndsAt)}.` : '');
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.background }}>
@@ -83,20 +132,27 @@ export default function PaywallScreen() {
         </SafeAreaView>
         <Animated.View entering={ZoomIn.delay(250).springify()} style={{ position: 'absolute', right: 18, bottom: -16 }}>
           <View style={{ backgroundColor: '#FF5A3C', borderRadius: 14, paddingHorizontal: 14, paddingVertical: 9, transform: [{ rotate: '-5deg' }] }}>
-            <AppText style={{ fontFamily: fonts.display, fontSize: 14 }} color="#15151C">7 jours offerts</AppText>
+            <AppText style={{ fontFamily: fonts.display, fontSize: 14 }} color="#15151C">
+              {access.state === 'premium' ? 'Premium' : access.state === 'trial' ? `${access.daysLeft} ${access.daysLeft > 1 ? 'jours' : 'jour'} d’essai` : 'Essai terminé'}
+            </AppText>
           </View>
         </Animated.View>
       </View>
 
       <SafeAreaView edges={['bottom']} style={{ flex: 1 }}>
         <ScrollView contentContainerStyle={{ flexGrow: 1, padding: 20, paddingTop: 34, gap: 10 }}>
-          {PLANS.map((p) => <PlanCard key={p.id} plan={p} selected={plan === p.id} onPress={() => setPlan(p.id)} />)}
+          {access.state === 'premium' ? null : PLANS.map((p) => <PlanCard key={p.id} plan={p} price={price(p.id)} selected={plan === p.id} onPress={() => setPlan(p.id)} />)}
           <View style={{ flex: 1, minHeight: 16 }} />
-          <Button label="Commencer mes 7 jours gratuits" onPress={() => Alert.alert('Bientôt', 'Le paiement sera activé avant le lancement sur les stores.')} />
-          <AppText variant="small" muted style={{ textAlign: 'center', fontSize: 12 }}>{current.after}</AppText>
+          <Button label={cta} loading={busy} onPress={access.state === 'premium' ? () => Linking.openURL(MANAGE_URL) : subscribe} />
+          <AppText variant="small" muted style={{ textAlign: 'center', fontSize: 12 }}>{note}</AppText>
+          {!PURCHASES_ENABLED ? <AppText variant="small" muted style={{ textAlign: 'center', fontSize: 12 }}>Version bêta : le paiement sera activé à la sortie sur les stores.</AppText> : null}
           <View style={{ flexDirection: 'row', justifyContent: 'center', gap: 20 }}>
-            <PressableScale onPress={() => {}} style={{ paddingVertical: 10 }}><AppText variant="smallStrong" color={colors.primary}>J’ai un code promo</AppText></PressableScale>
-            <PressableScale onPress={() => {}} style={{ paddingVertical: 10 }}><AppText variant="smallStrong" color={colors.primary}>Restaurer mes achats</AppText></PressableScale>
+            <PressableScale onPress={onCode} style={{ paddingVertical: 10 }}><AppText variant="smallStrong" color={colors.primary}>J’ai un code promo</AppText></PressableScale>
+            <PressableScale onPress={onRestore} style={{ paddingVertical: 10 }}><AppText variant="smallStrong" color={colors.primary}>Restaurer mes achats</AppText></PressableScale>
+          </View>
+          <View style={{ flexDirection: 'row', justifyContent: 'center', gap: 16 }}>
+            <PressableScale onPress={() => router.push('/legal/cgu')} style={{ paddingVertical: 6 }}><AppText variant="tiny" muted>Conditions d’utilisation</AppText></PressableScale>
+            <PressableScale onPress={() => router.push('/legal/confidentialite')} style={{ paddingVertical: 6 }}><AppText variant="tiny" muted>Confidentialité</AppText></PressableScale>
           </View>
         </ScrollView>
       </SafeAreaView>

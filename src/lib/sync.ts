@@ -20,7 +20,7 @@ const SIGNED_URL_SECONDS = 60 * 60 * 24 * 30; // liens de photos valables 30 jou
 
 type ProfileRow = {
   first_name: string | null; city: string | null; notification_time: string | null; answers: Record<string, string[]> | null;
-  styles: string[] | null; onboarded_at: string | null; trial_started_at: string | null;
+  styles: string[] | null; onboarded_at: string | null; trial_started_at: string | null; premium_until?: string | null;
 };
 
 type GarmentRow = {
@@ -58,6 +58,7 @@ function rowToProfile(r: ProfileRow, duels: DuelChoice[]): Partial<Profile> {
     onboarded: !!r.onboarded_at,
     onboardedAt: r.onboarded_at ?? undefined,
     trialStartedAt: r.trial_started_at ?? undefined,
+    premiumUntil: r.premium_until ?? undefined,
   };
 }
 
@@ -97,7 +98,7 @@ export type RemoteSnapshot = { profile: Partial<Profile>; wardrobe: Garment[]; h
 export async function pullAll(userId: string): Promise<RemoteSnapshot> {
   if (!supabase) throw new Error('Supabase indisponible');
   const [p, g, d, o] = await Promise.all([
-    supabase.from('profiles').select('first_name, city, notification_time, answers, styles, onboarded_at, trial_started_at').eq('id', userId).maybeSingle(),
+    supabase.from('profiles').select('first_name, city, notification_time, answers, styles, onboarded_at, trial_started_at, premium_until').eq('id', userId).maybeSingle(),
     supabase.from('garments').select('*').eq('archived', false).order('created_at', { ascending: false }),
     supabase.from('duel_choices').select('duel_id, picked'),
     supabase.from('outfits').select('*').eq('status', 'worn').order('for_date', { ascending: false }).limit(400),

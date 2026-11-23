@@ -96,7 +96,8 @@ export const QUESTIONS: Question[] = [
       { id: 'normal', label: '5 à 15 minutes' },
       { id: 'slow', label: 'Je prends mon temps' },
     ], usage: 'Complexité des looks (superpositions, accessoires).' },
-  { id: 'coverage', section: 'Ton quotidien', kind: 'multi', title: 'Tu as des préférences de couverture ?', subtitle: 'On les respectera dans chaque look.',
+  { id: 'coverage', section: 'Ton quotidien', kind: 'multi', title: 'Tu as des préférences de couverture ?',
+    subtitle: 'On les respectera dans chaque look. En les indiquant, tu acceptes qu’on les utilise uniquement pour composer tes tenues : jamais partagées, effaçables à tout moment.',
     exclusiveOptionId: 'none',
     options: [
       { id: 'none', label: 'Rien de particulier' },
