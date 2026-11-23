@@ -64,6 +64,13 @@ export default function LookScreen() {
               </Animated.View>
             ))}
           </View>
+          {pieces.length < entry.outfit.garmentIds.length ? (
+            <AppText variant="small" color={ink} style={{ opacity: 0.75 }}>
+              {entry.outfit.garmentIds.length - pieces.length > 1
+                ? `${entry.outfit.garmentIds.length - pieces.length} pièces de ce look ne sont plus dans ta garde-robe.`
+                : 'Une pièce de ce look n’est plus dans ta garde-robe.'}
+            </AppText>
+          ) : null}
         </Animated.View>
         {entry.outfit.tip ? (
           <View style={{ flexDirection: 'row', gap: 12, padding: 14, borderRadius: 18, borderWidth: 1, borderColor: colors.surfaceBorder, backgroundColor: colors.surface }}>

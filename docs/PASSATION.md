@@ -69,20 +69,27 @@ Session 2 (2026-11-23), tout testé (tsc, export iOS, tests SQL, tests de bout e
   webhook revenuecat-webhook. CGU + confidentialité (src/data/legal.ts, docs/legal/).
 - Bêta : icône, eas.json, docs/BETA.md (fiches stores, confidentialité), supabase/sql/indicateurs.sql.
 
-## Bloqué — décisions ou paiements du fondateur (voir le récap du 2026-11-23)
-1. Nom de domaine dressingai.fr (choisi, libre le 2026-11-23, ~7 €/an) + Resend gratuit : sans serveur d'e-mail, Supabase n'envoie qu'un lien (pas de code),
-   seulement aux membres de l'équipe, 2 par heure. Bloquant pour la bêta.
-2. Offre payante Gemini : obligatoire avant les photos de vrais testeurs (RGPD), lève les quotas (Flash-Lite
-   15/min, Flash 20/jour), permet de générer les images des duels (~2 €) et de retester Flash.
-3. (Fait le 2026-11-23) Inscription sans e-mail activée avec l'accord du fondateur.
-4. (Décidé) Essai sans carte pour la bêta ; on retranche au lancement avec les chiffres de conversion.
-5. Champs [entre crochets] de src/data/legal.ts (nom, adresse, médiateur de la consommation).
-6. Jeton Expo (compte moha.del51) en secret de l'environnement → builds EAS et mises à jour testables sans PC.
-7. Suppression automatique des comptes inactifs depuis 2 ans (promise dans la politique) : à programmer, avec accord.
+## État au 2026-11-23 (fin de journée) : tout ce qui dépend de Claude est fait
+- Comptes et services en place : domaine dressingai.fr (OVH : DNS, hébergement gratuit avec le site, boîte
+  contact@dressingai.fr), Resend (e-mails, SMTP Supabase), Gemini payant (prépaiement 5 €, sans recharge auto),
+  Expo (organisation dressing-ai.com, robot claude-cloud, projet EAS 5acb6e9b…). Secrets réseau de l'environnement
+  cloud : api.supabase.com, generativelanguage.googleapis.com, api.resend.com, api.expo.dev.
+- Bêta testable sur iPhone sans PC : QR permanent docs/qr/expo-go-beta.png (canal EAS « preview »). Publier :
+  `EXPO_TOKEN=proxy-injected npx eas-cli@27.11.0 update --channel preview --environment preview --platform ios --message "…" --non-interactive`.
+- Identité : bleu nuit / kaki / sable, DM Serif Display (choix du fondateur). Visuels stores : docs/store/.
+- Le fondateur teste quelques matins (notification du look comprise) ; Claude attend son signal pour Apple/Google.
+
+## Petits restes facultatifs côté fondateur
+1. Redéposer site/confidentialite.html sur OVH (FileZilla, dossier www) : phrase sur les comptes inactifs précisée.
+2. Secret RESEND_API_KEY (clé Resend « Sending access ») dans Supabase > Edge Functions > Secrets, pour les e-mails
+   d'avertissement avant suppression des comptes inactifs (premiers cas pas avant 2028 ; sans la clé, aucun compte
+   avec e-mail n'est supprimé).
 
 ## À faire (dans l'ordre)
-1. Débloquer les points ci-dessus, puis : modèles d'e-mail avec {{ .Token }}, images des duels, RevenueCat.
-2. Détourage sur le téléphone (module natif iOS Vision / Android ML Kit) dans un build de développement.
-3. Notification du matin avec le nom du look préparé (push Expo, nécessite le projet EAS).
-4. Bêta (TestFlight, test fermé Google 12 testeurs × 14 jours), mesure avec supabase/sql/indicateurs.sql.
-5. Raccourcir l'inscription selon les abandons mesurés ; stores ; acquisition.
+1. Retours des tests du fondateur → corrections publiées dans la journée.
+2. Quand le fondateur paie Apple (99 $) et Google (25 $) : build de développement / production EAS (runtimeVersion à
+   repasser en appVersion), détourage sur le téléphone (iOS Vision / ML Kit), TestFlight et test fermé Google
+   (12 testeurs × 14 jours), fiches stores (docs/BETA.md, docs/store/).
+3. Bêta : indicateurs (supabase/sql/indicateurs.sql), raccourcir l'inscription selon les abandons.
+4. Lancement payant : micro-entreprise (adresse perso du fondateur dans les CGU, SIRET), RevenueCat + produits,
+   médiateur, puis acquisition.

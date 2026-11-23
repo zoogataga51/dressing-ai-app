@@ -219,3 +219,7 @@ Politique de confidentialité précisée (site à redéposer).
 15 photos produit générées pour la garde-robe de démo (assets/demo/, ~200 Ko) ; la tuile vêtement remplit
 désormais toute la vignette avec la photo (détourée : posée sur la couleur). 5 visuels marketing par store dans
 docs/store/ (App Store 1320×2868, Google Play 1080×2160), générés par scripts/store-shots/. Mise à jour 0.3.1.
+
+## 2026-11-23 — [cloud] Fin de la liste côté Claude
+Relecture : détail d'un look signale les pièces retirées de la garde-robe. Mise à jour 0.3.2. PASSATION.md réécrite
+(état complet, restes facultatifs, suite). Claude attend les retours de test et le signal du fondateur pour Apple/Google.
