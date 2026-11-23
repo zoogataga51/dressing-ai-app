@@ -18,6 +18,7 @@ export type GeminiResult<T> = {
 /** Prix publics en dollars par million de jetons (entrée, sortie + réflexion). À mettre à jour si Google les change. */
 const PRICES_USD: Record<string, { input: number; output: number }> = {
   'gemini-3.5-flash-lite': { input: 0.3, output: 2.5 },
+  'gemini-3.1-flash-lite': { input: 0.3, output: 2.5 }, // prix non confirmé : on prend celui de 3.5 Flash-Lite (prudent)
   'gemini-3.5-flash': { input: 1.5, output: 9 },
 };
 const USD_TO_EUR = 0.92;

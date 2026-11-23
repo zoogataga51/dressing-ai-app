@@ -47,18 +47,33 @@ modifier ce fichier.
 
 ## Génération des looks (branchée le 2026-11-23)
 
-- **IA** : `supabase/functions/generate-outfits` → Gemini 3.5 Flash (repli Flash-Lite). Règles du styliste,
-  résumé du profil et contrôle qualité dans `supabase/functions/_shared/outfits.ts` : toute tenue incomplète,
-  avec une pièce inventée, inadaptée à la météo ou incohérente en formalité est refusée.
+- **IA** : `supabase/functions/generate-outfits` → Gemini 3.5 Flash-Lite (repli 3.1 Flash-Lite, quota séparé).
+  Règles du styliste, résumé du profil et contrôle qualité : `supabase/functions/_shared/outfits.ts` ; toute tenue
+  incomplète, avec une pièce inventée, inadaptée à la météo ou avec un contresens (escarpins + jogging) est refusée.
+  Le modèle propose 4 tenues ; s'il en reste moins de 3 valides, seconde chance en lui disant pourquoi
+  (`_shared/compose.ts`).
 - Cache : même humeur le même jour → mêmes looks (aucun coût). Plafond : 4 générations par jour et par personne.
 - « Pas pour moi » → statut `disliked`, rappelé à l'IA les jours suivants. Pièces portées depuis moins de 3 jours
   mises de côté (sauf petite garde-robe).
 - **Secours** : moteur par règles du téléphone (`src/lib/outfitEngine.ts`), utilisé en démo, hors ligne, si l'IA
   échoue ou dépasse 15 s.
-- **Banc d'essai** : `NODE_USE_ENV_PROXY=1 node --experimental-strip-types scripts/looks-lab/run.ts <modèle>`
-  (garde-robes de test dans `scripts/looks-lab/wardrobes.ts`).
+- **Banc d'essai** : `NODE_USE_ENV_PROXY=1 node --experimental-strip-types scripts/looks-lab/run.ts`
+  (16 profils dans `scripts/looks-lab/wardrobes.ts`). **Test de bout en bout** : `scripts/e2e/run.sh <photo.jpg>`
+  (compte temporaire créé en SQL puis supprimé par delete-account).
 - **Coût** : chaque appel est tracé dans `events` (`name = 'ai_call'`, modèle, jetons, coût en €).
-  Mesuré le 2026-11-23 : ~0,08 c€ par photo (Flash-Lite), 0,4 à 0,8 c€ par génération de looks (Flash).
+
+### Résultats des tests (2026-11-23, voir docs/JOURNAL.md)
+
+| Configuration | Profils avec 3 looks | Erreurs | Coût / génération | Durée |
+|---|---|---|---|---|
+| 3.5 Flash (réflexion basse) | 9/16 (souvent « saturé ») | 7/16 | 0,27 c€ (jusqu'à 0,8) | 5,4 s |
+| 3.5 Flash-Lite seul, 3 tenues | ~11/16 | 0 | 0,10 c€ | 1,6 s |
+| **3.5 Flash-Lite + seconde chance (retenu)** | **15/16** | **0** | **0,11 c€** | **1,9 s** |
+
+Offre gratuite : Flash limité à 20 requêtes/jour (redirigé vers 3.6 Flash), Flash-Lite à 15/minute.
+Coût estimé par utilisateur actif : ~0,05 €/mois de looks + ~0,03 € de photos le premier mois → bien sous 0,50 €.
+Avant la bêta : passer à l'offre payante de Gemini (les données de l'offre gratuite peuvent servir à Google ;
+photos personnelles = RGPD), puis retester Flash, plus fin sur le style.
 
 ## Photos et détourage
 

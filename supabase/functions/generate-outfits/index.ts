@@ -4,20 +4,20 @@
 // - Les règles du styliste et le contrôle qualité sont dans ../_shared/outfits.ts (testés sur de
 //   fausses garde-robes avec scripts/looks-lab).
 // - Chaque tenue renvoyée par l'IA est vérifiée : aucune pièce inventée, tenue complète, météo.
+//   S'il en reste moins de 3, seconde chance en expliquant à l'IA ce qui a été refusé (../_shared/compose.ts).
+// - Modèle : Gemini 3.5 Flash-Lite (rapide, ~0,1 c€), repli 3.1 Flash-Lite. Flash est limité à 20 requêtes/jour
+//   sur l'offre gratuite et souvent saturé : à retester avec l'offre payante.
 // - Même humeur le même jour → on renvoie les looks déjà créés (aucun coût en plus).
 // - Plafond d'appels par jour et par personne pour tenir le coût (< 0,50 € par mois).
 // - Si l'IA échoue, l'appli utilise son moteur par règles (réponse { outfits: [], fallback: true }).
 //
 // Secret nécessaire : GEMINI_API_KEY. SUPABASE_URL et SUPABASE_SERVICE_ROLE_KEY sont automatiques.
 
-import { geminiJsonWithFallback } from '../_shared/gemini.ts';
-import {
-  buildOutfitPrompt, OUTFIT_SCHEMA, OUTFIT_SYSTEM, validateOutfits,
-  type Mood, type ProposedOutfit, type WardrobeItem, type Weather,
-} from '../_shared/outfits.ts';
+import { composeOutfits } from '../_shared/compose.ts';
+import { buildOutfitPrompt, type Mood, type WardrobeItem, type Weather } from '../_shared/outfits.ts';
 import { adminClient, caller, callsToday, cors, json, logAiCall } from '../_shared/server.ts';
 
-const MODELS = (Deno.env.get('GEMINI_OUTFIT_MODELS') ?? 'gemini-3.5-flash,gemini-3.5-flash-lite').split(',');
+const MODELS = (Deno.env.get('GEMINI_OUTFIT_MODELS') ?? 'gemini-3.5-flash-lite,gemini-3.1-flash-lite').split(',');
 const MAX_PER_DAY = 4;
 const MOODS: Mood[] = ['free', 'cozy', 'chic', 'relaxed', 'sporty', 'bold'];
 const DAY = 86_400_000;
@@ -82,13 +82,11 @@ Deno.serve(async (req) => {
 
   // 3. Appel à l'IA, contrôle qualité, enregistrement.
   try {
-    const r = await geminiJsonWithFallback<{ outfits: ProposedOutfit[] }>(MODELS, {
-      apiKey, system: OUTFIT_SYSTEM, schema: OUTFIT_SCHEMA, parts: [{ text: prompt }], temperature: 0.8, thinking: 'low', timeoutMs: 30_000,
-    });
-    const { ok, rejected } = validateOutfits(r.data.outfits ?? [], available, weather);
+    const r = await composeOutfits({ apiKey, models: MODELS, prompt, wardrobe: available, weather, thinking: 'low', timeoutMs: 15_000 });
+    const ok = r.ok;
     await logAiCall(admin, user.id, {
       fn: 'generate-outfits', model: r.model, tokens_in: r.tokensIn, tokens_out: r.tokensOut, cost_eur: r.costEur, ms: r.ms,
-      proposed: r.data.outfits?.length ?? 0, kept: ok.length, rejected,
+      attempts: r.attempts, proposed: r.proposed, kept: ok.length, rejected: r.rejected,
     });
     if (!ok.length) return json({ outfits: [], fallback: true, reason: 'qualité' });
 

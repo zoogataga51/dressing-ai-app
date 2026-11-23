@@ -2,7 +2,7 @@
 //
 // L'appli envoie d'abord la photo dans le bucket privé « garments » (garments/<utilisateur>/<id>.jpg),
 // puis appelle cette fonction avec { path }. La réponse est une proposition : l'utilisateur valide ou corrige.
-// Modèle : Gemini 3.5 Flash-Lite (≈ 0,08 centime par photo), repli sur Gemini 3.5 Flash si saturé.
+// Modèle : Gemini 3.5 Flash-Lite (≈ 0,08 centime par photo), repli sur Gemini 3.1 Flash-Lite (quota séparé) si saturé.
 
 import { geminiJsonWithFallback } from '../_shared/gemini.ts';
 import { cleanAnalysis, GARMENT_SCHEMA, GARMENT_SYSTEM, type GarmentAnalysis } from '../_shared/garment.ts';
@@ -10,7 +10,7 @@ import { adminClient, caller, callsToday, cors, json, logAiCall } from '../_shar
 
 const MAX_PER_DAY = 80;          // largement assez pour remplir une garde-robe en une soirée
 const MAX_BYTES = 6 * 1024 * 1024;
-const MODELS = (Deno.env.get('GEMINI_VISION_MODELS') ?? 'gemini-3.5-flash-lite,gemini-3.5-flash').split(',');
+const MODELS = (Deno.env.get('GEMINI_VISION_MODELS') ?? 'gemini-3.5-flash-lite,gemini-3.1-flash-lite').split(',');
 
 function toBase64(bytes: Uint8Array): string {
   let s = '';

@@ -68,3 +68,9 @@ analyze-garment (Gemini 3.5 Flash-Lite, ~0,08 c€/photo) et generate-outfits (G
 bout avec un compte temporaire (créé en SQL, supprimé via delete-account) : tout OK, coûts tracés dans events.
 Appli : vraie analyse à l'ajout, looks IA avec écran d'attente, « Pas pour moi », secours par règles.
 Détourage : sur le téléphone (gratuit) au passage aux builds de dev ; modèles d'image Gemini = payants (refusés).
+
+## 2026-11-23 — [cloud] Tests qualité/coût des looks (étape 5)
+Banc d'essai scripts/looks-lab (16 profils : voilée, qamis, bureau, étudiant, street, colorée…). Flash : meilleur
+style mais 20 requêtes/jour sur l'offre gratuite et souvent saturé. Retenu : 3.5 Flash-Lite qui propose 4 tenues +
+seconde chance si < 3 valides → 15/16 profils avec 3 looks, 0,11 c€, 1,9 s. Corrigé : qamis/abaya sur pantalon
+acceptés, mélange chic/décontracté accepté, noms avec accents. Prod : looks en ~4 s. Test e2e : scripts/e2e/run.sh.

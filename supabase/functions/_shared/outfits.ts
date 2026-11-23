@@ -13,19 +13,20 @@ export type ProposedOutfit = { name: string; vibe: string; tip: string; garment_
 
 export const OUTFIT_SYSTEM = `Tu es un styliste personnel exigeant, au goût sûr, qui compose chaque matin les tenues d'une personne UNIQUEMENT avec ses vêtements.
 Règles impératives (une tenue qui en enfreint une est refusée) :
-1. Tenue complète : exactement un bas + un ou deux hauts, OU une robe seule (jamais de haut par-dessus une robe, jamais de robe avec un bas) ; toujours UNE paire de chaussures. Deux hauts seulement s'ils se superposent vraiment (chemise sous un pull, t-shirt sous un sweat ou une chemise ouverte).
+1. Tenue complète : exactement un bas + un ou deux hauts, OU une robe seule (jamais de haut par-dessus une robe ; un bas sous la robe seulement pour une tenue longue de type qamis, abaya, tunique ou caftan) ; toujours UNE paire de chaussures. Deux hauts seulement s'ils se superposent vraiment (chemise sous un pull, t-shirt sous un sweat ou une chemise ouverte).
 2. Veste ou manteau (catégorie outer) obligatoire sous 15 °C ou s'il pleut, si la garde-robe en contient ; jamais au-dessus de 24 °C. Un seul.
 3. Accessoires : 0 à 2, seulement s'ils servent la tenue. Le voile, s'il est dans la garde-robe d'une personne qui le porte, est présent dans CHAQUE tenue.
 4. Respecte strictement les préférences de couverture (jamais d'exception).
 5. Couleurs : au plus une couleur forte par tenue, le reste en neutres (noir, blanc, crème, beige, camel, gris, marine, bleu jean, kaki, marron) ou en camaïeu. Évite les couleurs que la personne n'aime pas. Pas deux imprimés différents ensemble ; un seul imprimé si elle les aime « avec modération », aucun si elle préfère l'uni.
 6. Coupes : équilibre les volumes (ample en haut → plus net en bas, et inversement), sauf si la personne aime l'oversize.
 7. Météo et saisons : chaleur des pièces adaptée (rien de léger sous 10 °C, pas de pièce chaude ni de bottines au-dessus de 20 °C, pas de sandales sous 18 °C). Utilise les pièces dans leurs saisons. Pluie : évite daim et toile claire aux pieds si possible.
-8. Cohérence de formalité et d'usage : pas de mocassins habillés avec un jogging, pas de doudoune sport sur une tenue très habillée, pas d'escarpins avec un sac banane (écart de formalité ≤ 1 entre toutes les pièces).
+8. Cohérence de formalité et d'usage : mélanger chic et décontracté est bienvenu (baskets et blazer, abaya et baskets), mais pas de contresens : pas d'escarpins ou de mocassins habillés avec un jogging, un short ou un legging, pas d'escarpins avec un sac banane.
 9. Les 3 tenues sont nettement différentes : chacune a un bas ou une robe différent si possible, et des chaussures différentes si possible.
 10. Fais tourner la garde-robe : favorise les pièces peu portées ou pas portées depuis longtemps.
-Style : respecte l'humeur du jour et le style de la personne. Si elle accepte la nouveauté, la 3e tenue peut être plus audacieuse.
+Style : les 3 tenues respectent l'humeur du jour (une humeur « chic » = 3 tenues chics, pas de short ni de casquette si la garde-robe permet mieux) et le style de la personne. Si elle accepte la nouveauté, la 3e tenue peut être plus audacieuse.
 Textes en français, tutoiement, ton chic et chaleureux :
-- name : 2 à 3 mots, élégant (« Camel du lundi », « Néo-preppy »), jamais « Look 1 ».
+- Français impeccable avec TOUS les accents (« Éclat bohème », jamais « Eclat boheme »), majuscule seulement au premier mot.
+- name : 2 à 4 mots, évocateur et précis (« Camel du lundi », « Néo-preppy », « Marinière et soleil »), jamais « Look 1 ». Évite les mots usés : élégance, urbain, intemporel, casual, allure. Trois noms bien différents.
 - vibe : une phrase courte qui dit pourquoi cette tenue marche aujourd'hui (météo, humeur).
 - tip : un conseil concret de styliste pour la porter (rentrer, retrousser, ceinturer, superposer…), 1 phrase. Il ne parle QUE des pièces de cette tenue, sans en citer d'autres.
 - Le nom et la phrase décrivent vraiment la tenue (pas « terracotta » s'il n'y a pas de terracotta, pas « nocturne » pour un look de jour).
@@ -128,9 +129,12 @@ export function buildOutfitPrompt(opts: {
     opts.recentOutfits?.length ? `TENUES DES DERNIERS JOURS (à ne pas refaire)\n${opts.recentOutfits.join('\n')}` : '',
     opts.disliked?.length ? `TENUES REFUSÉES RÉCEMMENT (à éviter)\n${opts.disliked.join('\n')}` : '',
     `GARDE-ROBE DISPONIBLE (id | catégorie | nom | couleur | …)\n${items}`,
-    'Compose 3 tenues.',
+    'Compose 4 tenues, de la meilleure à la moins bonne (on en gardera 3).',
   ].filter(Boolean).join('\n\n');
 }
+
+/** Tenues longues qui se portent sur un pantalon. */
+const LONG_DRESS = /qamis|qami|abaya|tunique|kurta|djellaba|caftan|kaftan|jilbab/i;
 
 /** Contrôle qualité : renvoie la raison du refus, ou null si la tenue est correcte. */
 export function rejectReason(o: ProposedOutfit, byId: Map<string, WardrobeItem>, weather: Weather): string | null {
@@ -140,7 +144,8 @@ export function rejectReason(o: ProposedOutfit, byId: Map<string, WardrobeItem>,
   if (items.some((x) => !x)) return 'pièce inventée';
   const count = (c: string) => items.filter((x) => x!.category === c).length;
   const tops = count('top'), bottoms = count('bottom'), dresses = count('dress'), shoes = count('shoes'), outers = count('outer'), acc = count('accessory');
-  const base = (dresses === 1 && bottoms === 0 && tops === 0) || (dresses === 0 && bottoms === 1 && tops >= 1 && tops <= 2);
+  const longDress = items.some((x) => x!.category === 'dress' && LONG_DRESS.test(`${x!.subtype} ${x!.label}`));
+  const base = (dresses === 1 && tops === 0 && (bottoms === 0 || (bottoms === 1 && longDress))) || (dresses === 0 && bottoms === 1 && tops >= 1 && tops <= 2);
   if (!base) return 'tenue incomplète';
   if (shoes !== 1) return 'chaussures';
   if (outers > 1 || acc > 2) return 'trop de pièces';
@@ -153,10 +158,23 @@ export function rejectReason(o: ProposedOutfit, byId: Map<string, WardrobeItem>,
   const onlyCold = (x: WardrobeItem) => x.seasons.length > 0 && x.seasons.every((z) => z === 'autumn' || z === 'winter');
   if (weather.tempC >= 20 && main.some((x) => onlyCold(x!))) return 'pièce d’hiver par temps chaud';
   if (weather.tempC <= 8 && main.some((x) => x!.seasons.length === 1 && x!.seasons[0] === 'summer')) return 'pièce d’été par grand froid';
-  const f = main.map((x) => x!.formality);
-  if (Math.max(...f) - Math.min(...f) > 1 && !main.some((x) => x!.category === 'outer' && x!.formality === Math.max(...f))) return 'formalité incohérente';
+  // Le mélange chic/décontracté est moderne (baskets et abaya, blazer et jean). On refuse seulement
+  // les vrais contresens : chaussures très habillées avec un bas très décontracté (escarpins + jogging).
+  const shoe = items.find((x) => x!.category === 'shoes')!;
+  const bottom = items.find((x) => x!.category === 'bottom');
+  if (bottom && shoe.formality === 3 && bottom.formality === 1 && /jogging|survêt|short|legging|cargo/i.test(`${bottom.subtype} ${bottom.label}`)) return 'formalité incohérente';
   return null;
 }
+
+/** « Rock Chic Inattendu » → « Rock chic inattendu » (sauf sigles et noms de ville). */
+function sentenceCase(name: string): string {
+  const words = name.split(' ');
+  return words.map((w, i) => {
+    if (i === 0) return w.charAt(0).toUpperCase() + w.slice(1);
+    return /^[A-ZÀ-Ý][a-zà-ÿ'-]+$/.test(w) && !CITY_WORDS.has(w) ? w.toLowerCase() : w;
+  }).join(' ');
+}
+const CITY_WORDS = new Set(['Paris', 'Lyon', 'Marseille', 'Lille', 'Nice', 'Azur', 'Riviera', 'Saint-Tropez']);
 
 /** Garde les tenues correctes, distinctes, limitées à 3. */
 export function validateOutfits(list: ProposedOutfit[], wardrobe: WardrobeItem[], weather: Weather): { ok: ProposedOutfit[]; rejected: string[] } {
@@ -169,7 +187,7 @@ export function validateOutfits(list: ProposedOutfit[], wardrobe: WardrobeItem[]
     const key = [...(o.garment_ids ?? [])].sort().join(',');
     if (reason) rejected.push(`${o.name} : ${reason}`);
     else if (seen.has(key)) rejected.push(`${o.name} : doublon`);
-    else { seen.add(key); ok.push({ name: o.name.trim().slice(0, 40), vibe: (o.vibe ?? '').trim().slice(0, 140), tip: (o.tip ?? '').trim().slice(0, 220), garment_ids: o.garment_ids }); }
+    else { seen.add(key); ok.push({ name: sentenceCase(o.name.trim().slice(0, 40)), vibe: (o.vibe ?? '').trim().slice(0, 140), tip: (o.tip ?? '').trim().slice(0, 220), garment_ids: o.garment_ids }); }
   }
   return { ok: ok.slice(0, 3), rejected };
 }
